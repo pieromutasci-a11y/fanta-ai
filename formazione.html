@@ -19,7 +19,7 @@
   <section id="view-leghe" class="view active wrap">
     <div class="page-head">
       <h1>Le tue leghe</h1>
-      <p>Apri una lega per gestire la rosa salvata o per costruire la formazione della prossima giornata.</p>
+      <p>Apri una lega per gestire la rosa salvata o per costruire una formazione al volo.</p>
     </div>
 
     <div class="league-grid" id="league-grid">
@@ -288,7 +288,7 @@
 
     <div class="page-head">
       <h1 id="lega-hub-name">Lega</h1>
-      <p>Scegli cosa fare: la rosa resta salvata finché non la modifichi tu, la formazione la puoi rifare a ogni giornata.</p>
+      <p>Scegli cosa fare: la rosa resta salvata finché non la modifichi tu, la formazione è uno strumento al volo che puoi rifare quando vuoi.</p>
     </div>
 
     <div class="hub-grid">
@@ -336,19 +336,10 @@
 
     <div class="page-head">
       <h1>Formazione — <span id="league-name">Lega</span></h1>
-      <p>Clicca su una maglia per scegliere chi schierare in quel ruolo — FantaAI ti mostra subito i migliori candidati della tua rosa salvata.</p>
+      <p>Uno strumento al volo: costruisci una formazione con la tua rosa salvata quando vuoi, non è legata a nessuna giornata e non resta salvata.</p>
     </div>
 
     <div class="picker-row">
-      <div class="picker-group">
-        <span class="picker-label">Giornata</span>
-        <div class="chip-row" id="giornata-picker">
-          <button class="chip active" data-giornata="1" type="button">G1</button>
-          <button class="chip" data-giornata="2" type="button">G2</button>
-          <button class="chip" data-giornata="3" type="button">G3</button>
-          <button class="chip" data-giornata="4" type="button">G4</button>
-        </div>
-      </div>
       <div class="picker-group">
         <span class="picker-label">Modulo</span>
         <div class="chip-row" id="modulo-picker">
@@ -374,7 +365,6 @@
         <p class="pitch-hint">Clicca su una maglia vuota o già assegnata per cambiare giocatore. La stella imposta il capitano.</p>
         <div class="pitch-field" id="pitch-field"><!-- righe generate da script --></div>
         <div class="pitch-actions">
-          <button class="btn primary" id="save-formazione" type="button">Salva questa formazione</button>
           <span class="save-note" id="save-note"></span>
         </div>
       </div>
@@ -468,7 +458,8 @@
   }
   function persist() {
     try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify({ LEAGUES, ROSTERS, formationState, MASTER_LISTONE }));
+      // la formazione non viene mai salvata: è uno strumento temporaneo, non un dato persistente
+      localStorage.setItem(STORAGE_KEY, JSON.stringify({ LEAGUES, ROSTERS, MASTER_LISTONE }));
     } catch { /* storage non disponibile: si continua solo in memoria */ }
   }
   const saved = loadSaved();
@@ -559,9 +550,9 @@
   }
 
   let currentLeague = null;
-  let currentGiornata = 1;
   let currentModulo = "4-4-2";
-  let formationState = (saved && saved.formationState) || {}; // "leagueId|giornata" -> { modulo, P:[name], D:[name...], C:[...], A:[...], captain:name }
+  // formazione: solo in memoria, mai salvata — è uno strumento al volo, non legato a una giornata
+  let formationState = {};
 
   function rosterOf(league) { return ROSTERS[league.id]; }
   function rosterCount(league) {
@@ -569,9 +560,9 @@
     return r.P.length + r.D.length + r.C.length + r.A.length;
   }
 
-  // variazione deterministica dei punti attesi per lega/giornata, solo per far vedere che cambia
-  function adjustedExp(player, league, giornata) {
-    const seedShift = Math.sin((player.name.length + league.seed * 3 + giornata) * 1.7) * 0.3;
+  // piccola variazione deterministica per lega, solo per differenziare i punti attesi tra rose diverse
+  function adjustedExp(player, league) {
+    const seedShift = Math.sin((player.name.length + league.seed * 3) * 1.7) * 0.3;
     return Math.max(5.5, +(player.exp + seedShift).toFixed(1));
   }
 
@@ -582,12 +573,12 @@
   function playerWithExp(role, name) {
     const base = rosterOf(currentLeague)[role].find(p => p.name === name);
     if (!base) return null;
-    return { ...base, role, adjExp: adjustedExp(base, currentLeague, currentGiornata) };
+    return { ...base, role, adjExp: adjustedExp(base, currentLeague) };
   }
 
   function ratedRole(role) {
     return rosterOf(currentLeague)[role]
-      .map(p => ({ ...p, role, adjExp: adjustedExp(p, currentLeague, currentGiornata) }))
+      .map(p => ({ ...p, role, adjExp: adjustedExp(p, currentLeague) }))
       .sort((a, b) => b.adjExp - a.adjExp);
   }
 
@@ -669,7 +660,7 @@
     const idx = LEAGUES.findIndex(l => l.id === pendingDeleteId);
     if (idx !== -1) LEAGUES.splice(idx, 1);
     delete ROSTERS[pendingDeleteId];
-    Object.keys(formationState).forEach(key => { if (key.startsWith(pendingDeleteId + "|")) delete formationState[key]; });
+    delete formationState[pendingDeleteId];
     persist();
     closeDeleteConfirm();
     renderLeagueGrid();
@@ -770,11 +761,7 @@
 
   function refreshHubDesc() {
     document.getElementById("hub-rosa-desc").textContent = rosterCount(currentLeague) + " giocatori salvati";
-    const key = currentLeague.id + "|" + currentGiornata;
-    const state = formationState[key];
-    document.getElementById("hub-formazione-desc").textContent = state
-      ? `Ultima formazione: modulo ${state.modulo}, giornata ${currentGiornata}`
-      : "Modulo, giocatori e scelta intelligente dell'AI";
+    document.getElementById("hub-formazione-desc").textContent = "Modulo, giocatori e scelta intelligente dell'AI — non resta salvata";
   }
 
   document.getElementById("back-to-leghe").addEventListener("click", () => { renderLeagueGrid(); switchView("view-leghe"); });
@@ -932,11 +919,9 @@
     if (isCsv) reader.readAsText(file); else reader.readAsArrayBuffer(file);
   });
 
-  /* ---------------- vista: formazione ---------------- */
+  /* ---------------- vista: formazione (strumento al volo, mai salvato) ---------------- */
   document.getElementById("go-formazione").addEventListener("click", () => {
-    currentGiornata = 1;
     document.getElementById("league-name").textContent = currentLeague.name;
-    document.querySelectorAll("#giornata-picker .chip").forEach(c => c.classList.toggle("active", c.dataset.giornata === "1"));
     document.getElementById("save-note").textContent = "";
     document.getElementById("save-note").className = "save-note";
     // mostra solo i moduli scelti per questa lega in fase di creazione
@@ -945,22 +930,21 @@
       c.hidden = !disponibili.includes(c.dataset.modulo);
     });
     switchView("view-formazione");
-    loadStateForGiornata(currentGiornata, currentLeague.modulo);
+    loadFormationState(currentLeague.modulo);
   });
-
-  function stateKey(giornata) { return currentLeague.id + "|" + giornata; }
 
   function emptySlots(modulo) {
     const [nd, nc, na] = MODULES[modulo];
     return { modulo, P: [null], D: Array(nd).fill(null), C: Array(nc).fill(null), A: Array(na).fill(null), captain: null };
   }
 
-  function autoFillState(modulo, giornata) {
+  function autoFillState(modulo) {
     const [nd, nc, na] = MODULES[modulo];
     const D = ratedRole("D"), C = ratedRole("C"), A = ratedRole("A"), P = ratedRole("P");
-    const starters = { P: [P[0].name], D: D.slice(0, nd).map(p => p.name), C: C.slice(0, nc).map(p => p.name), A: A.slice(0, na).map(p => p.name) };
+    // se manca un ruolo in rosa (es. nessun portiere ancora acquistato) la maglia resta vuota invece di rompersi
+    const starters = { P: [P[0] ? P[0].name : null], D: D.slice(0, nd).map(p => p.name), C: C.slice(0, nc).map(p => p.name), A: A.slice(0, na).map(p => p.name) };
     const captainPool = [...C.slice(0, nc), ...A.slice(0, na)].sort((a, b) => b.adjExp - a.adjExp);
-    return { modulo, ...starters, captain: captainPool[0] ? captainPool[0].name : P[0].name };
+    return { modulo, ...starters, captain: captainPool[0] ? captainPool[0].name : (P[0] ? P[0].name : null) };
   }
 
   function resizeState(state, modulo) {
@@ -969,28 +953,17 @@
     return { ...state, modulo, D: resize(state.D, nd), C: resize(state.C, nc), A: resize(state.A, na) };
   }
 
-  function loadStateForGiornata(giornata, fallbackModulo) {
-    currentGiornata = giornata;
-    const key = stateKey(giornata);
-    let state = formationState[key];
-    if (!state) {
-      state = emptySlots(fallbackModulo || currentModulo);
-      formationState[key] = state;
-    }
+  // ogni volta che entri nella formazione riparti da zero: è uno strumento temporaneo, non un dato salvato
+  function loadFormationState(fallbackModulo) {
+    const state = emptySlots(fallbackModulo || currentModulo);
+    formationState[currentLeague.id] = state;
     currentModulo = state.modulo;
     document.querySelectorAll("#modulo-picker .chip").forEach(c => c.classList.toggle("active", c.dataset.modulo === currentModulo));
     renderAll();
   }
 
-  function getState() { return formationState[stateKey(currentGiornata)]; }
-  function saveState(state) { formationState[stateKey(currentGiornata)] = state; persist(); }
-
-  document.getElementById("giornata-picker").addEventListener("click", (e) => {
-    const b = e.target.closest(".chip"); if (!b) return;
-    document.querySelectorAll("#giornata-picker .chip").forEach(x => x.classList.remove("active"));
-    b.classList.add("active");
-    loadStateForGiornata(parseInt(b.dataset.giornata, 10), currentLeague.modulo);
-  });
+  function getState() { return formationState[currentLeague.id]; }
+  function saveState(state) { formationState[currentLeague.id] = state; }
 
   document.getElementById("modulo-picker").addEventListener("click", (e) => {
     const b = e.target.closest(".chip"); if (!b) return;
@@ -1002,7 +975,7 @@
   });
 
   document.getElementById("ai-fill").addEventListener("click", () => {
-    saveState(autoFillState(currentModulo, currentGiornata));
+    saveState(autoFillState(currentModulo));
     renderAll();
   });
 
@@ -1241,19 +1214,6 @@
     });
     document.getElementById("rosa-count").textContent = count + " giocatori";
   }
-
-  document.getElementById("save-formazione").addEventListener("click", () => {
-    const note = document.getElementById("save-note");
-    const state = getState();
-    const missing = [...state.P, ...state.D, ...state.C, ...state.A].filter(n => !n).length;
-    if (missing > 0) {
-      note.textContent = `Non posso salvare: mancano ancora ${missing} maglie.`;
-      note.className = "save-note warn";
-      return;
-    }
-    note.textContent = `Salvata per la Giornata ${currentGiornata} · modulo ${currentModulo}`;
-    note.className = "save-note ok";
-  });
 
   renderLeagueGrid();
 </script>

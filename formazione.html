@@ -1,0 +1,1259 @@
+<title>FantaAI — Formazione</title>
+<link rel="stylesheet" href="css/base.css">
+<link rel="stylesheet" href="css/asta.css">
+<link rel="stylesheet" href="css/formazione.css">
+
+<header class="top">
+  <div class="wrap topbar">
+    <a class="brand" href="index.html"><span class="mark">⚽</span> FantaAI</a>
+    <span class="crumb">Formazione <b>ideale</b></span>
+    <nav class="links">
+      <a href="asta.html">Guida all'asta</a>
+    </nav>
+  </div>
+</header>
+
+<main class="stage">
+
+  <!-- ============ VIEW 1: LE MIE LEGHE ============ -->
+  <section id="view-leghe" class="view active wrap">
+    <div class="page-head">
+      <h1>Le tue leghe</h1>
+      <p>Apri una lega per gestire la rosa salvata o per costruire la formazione della prossima giornata.</p>
+    </div>
+
+    <div class="league-grid" id="league-grid">
+      <!-- le card lega sono generate da script, vedi LEAGUES qui sotto -->
+    </div>
+  </section>
+
+  <!-- ============ VIEW 1B: CREA NUOVA LEGA (stesse regole dell'asta) ============ -->
+  <section id="view-nuova-lega" class="view wrap">
+    <button class="back-link" id="back-to-leghe-from-nuova" type="button">← Le tue leghe</button>
+
+    <div class="page-head">
+      <h1>Nuova lega</h1>
+      <p>Le stesse regole che imposti per l'asta: FantaAI le userà per calcolare rosa, formazione e modificatori di questa lega.</p>
+    </div>
+
+    <div class="setup-grid">
+
+      <div class="card">
+        <h2><span class="card-icon">🏷️</span> Nome e crediti</h2>
+        <p class="card-sub">Come si chiama la lega e il budget totale per l'asta.</p>
+        <div class="field">
+          <label for="nl-name">Nome della lega</label>
+          <input type="text" id="nl-name" placeholder="Es. Lega degli Amici">
+        </div>
+        <div class="field">
+          <label for="nl-squadre">Numero squadre</label>
+          <div class="credit-input"><input type="number" id="nl-squadre" value="8" min="2" max="20"><span class="unit">squadre</span></div>
+        </div>
+        <div class="field">
+          <label for="nl-crediti">Crediti per squadra</label>
+          <div class="credit-input"><input type="number" id="nl-crediti" value="500" min="1"><span class="unit">crediti</span></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2><span class="card-icon">🧾</span> Modalità</h2>
+        <p class="card-sub">Cambia i ruoli utilizzabili e i punteggi di riferimento.</p>
+        <div class="mode-cards" id="nl-modalita">
+          <div class="mode-card active" data-value="Classic">
+            <div class="t">Classic</div>
+            <div class="d">Portiere, Difensore, Centrocampista, Attaccante</div>
+          </div>
+          <div class="mode-card" data-value="Mantra">
+            <div class="t">Mantra</div>
+            <div class="d">Ruoli multipli per giocatore, moduli avanzati</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2><span class="card-icon">👥</span> Composizione rosa</h2>
+        <p class="card-sub">Quanti giocatori per ruolo dovrà avere ogni squadra.</p>
+        <div class="role-rows">
+          <div class="role-row">
+            <div class="name"><span class="swatch">P</span> Portieri</div>
+            <div class="stepper-mini"><button type="button" data-step="-1" data-nlrole="p">−</button><span class="count" id="nl-count-p">3</span><button type="button" data-step="1" data-nlrole="p">+</button></div>
+          </div>
+          <div class="role-row">
+            <div class="name"><span class="swatch">D</span> Difensori</div>
+            <div class="stepper-mini"><button type="button" data-step="-1" data-nlrole="d">−</button><span class="count" id="nl-count-d">8</span><button type="button" data-step="1" data-nlrole="d">+</button></div>
+          </div>
+          <div class="role-row">
+            <div class="name"><span class="swatch">C</span> Centrocampisti</div>
+            <div class="stepper-mini"><button type="button" data-step="-1" data-nlrole="c">−</button><span class="count" id="nl-count-c">8</span><button type="button" data-step="1" data-nlrole="c">+</button></div>
+          </div>
+          <div class="role-row">
+            <div class="name"><span class="swatch">A</span> Attaccanti</div>
+            <div class="stepper-mini"><button type="button" data-step="-1" data-nlrole="a">−</button><span class="count" id="nl-count-a">6</span><button type="button" data-step="1" data-nlrole="a">+</button></div>
+          </div>
+        </div>
+        <div class="role-total">Totale rosa: <b id="nl-role-total">25</b> giocatori</div>
+      </div>
+
+      <div class="card full">
+        <h2><span class="card-icon">🛒</span> Tipo di mercato</h2>
+        <p class="card-sub">Come si svolge l'asta principale, più le eventuali finestre di mercato aggiuntive durante la stagione.</p>
+        <div class="chip-group" id="nl-market-type">
+          <button class="chip active" type="button">Asta classica</button>
+          <button class="chip" type="button">Asta smart</button>
+          <button class="chip" type="button">A buste chiuse</button>
+          <button class="chip" type="button">A quotazione</button>
+          <button class="chip" type="button">A gettone</button>
+        </div>
+        <div class="role-rows" style="margin-top:1.1rem;">
+          <div class="role-row">
+            <div class="name">Mercato di riparazione a metà stagione</div>
+            <label class="switch"><input type="checkbox" checked><span class="track"></span><span class="thumb"></span></label>
+          </div>
+          <div class="role-row">
+            <div class="name">Mercato scambi tra manager</div>
+            <label class="switch"><input type="checkbox" checked><span class="track"></span><span class="thumb"></span></label>
+          </div>
+          <div class="role-row">
+            <div class="name">Svincoli al buio</div>
+            <label class="switch"><input type="checkbox"><span class="track"></span><span class="thumb"></span></label>
+          </div>
+          <div class="role-row">
+            <div class="name">Prestiti tra squadre</div>
+            <label class="switch"><input type="checkbox"><span class="track"></span><span class="thumb"></span></label>
+          </div>
+        </div>
+      </div>
+
+      <div class="card full">
+        <h2><span class="card-icon">⚡</span> Bonus e malus</h2>
+        <p class="card-sub">Attiva le voci di punteggio della tua lega e imposta il valore assegnato a ciascuna.</p>
+        <table class="bonus-table">
+          <thead><tr><th>Voce</th><th></th><th class="val">Punti</th></tr></thead>
+          <tbody>
+            <tr><td>Gol fatto</td><td><label class="switch"><input type="checkbox" checked><span class="track"></span><span class="thumb"></span></label></td><td class="val"><input type="number" value="3" step="0.5"></td></tr>
+            <tr><td>Assist</td><td><label class="switch"><input type="checkbox" checked><span class="track"></span><span class="thumb"></span></label></td><td class="val"><input type="number" value="1" step="0.5"></td></tr>
+            <tr><td>Rigore parato</td><td><label class="switch"><input type="checkbox" checked><span class="track"></span><span class="thumb"></span></label></td><td class="val"><input type="number" value="3" step="0.5"></td></tr>
+            <tr><td>Rigore sbagliato</td><td><label class="switch"><input type="checkbox" checked><span class="track"></span><span class="thumb"></span></label></td><td class="val"><input type="number" value="-3" step="0.5"></td></tr>
+            <tr><td>Autogol</td><td><label class="switch"><input type="checkbox" checked><span class="track"></span><span class="thumb"></span></label></td><td class="val"><input type="number" value="-2" step="0.5"></td></tr>
+            <tr><td>Ammonizione</td><td><label class="switch"><input type="checkbox" checked><span class="track"></span><span class="thumb"></span></label></td><td class="val"><input type="number" value="-0.5" step="0.5"></td></tr>
+            <tr><td>Espulsione</td><td><label class="switch"><input type="checkbox" checked><span class="track"></span><span class="thumb"></span></label></td><td class="val"><input type="number" value="-1" step="0.5"></td></tr>
+            <tr><td>Portiere imbattuto</td><td><label class="switch"><input type="checkbox"><span class="track"></span><span class="thumb"></span></label></td><td class="val"><input type="number" value="1" step="0.5"></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="card full">
+        <h2><span class="card-icon">👕</span> Rosa e sostituzioni</h2>
+        <p class="card-sub">Vincoli sulla composizione della rosa e regole per cambiare la formazione dopo averla salvata.</p>
+        <div class="rs-grid">
+          <div class="modifier-block" data-enabled="true">
+            <div class="role-row">
+              <div class="name">Tetto giocatori per squadra reale</div>
+              <label class="switch"><input type="checkbox" class="mod-toggle" checked><span class="track"></span><span class="thumb"></span></label>
+            </div>
+            <div class="modifier-detail">
+              <div class="field">
+                <label>Massimo giocatori dalla stessa squadra di Serie A</label>
+                <div class="credit-input"><input type="number" value="3" min="2" max="5"><span class="unit">giocatori</span></div>
+              </div>
+            </div>
+          </div>
+          <div class="modifier-block" data-enabled="true">
+            <div class="role-row">
+              <div class="name">Timeout modifica formazione</div>
+              <label class="switch"><input type="checkbox" class="mod-toggle" checked><span class="track"></span><span class="thumb"></span></label>
+            </div>
+            <div class="modifier-detail">
+              <div class="field">
+                <label>Chiudi le formazioni</label>
+                <div class="credit-input"><input type="number" value="15" min="0" max="60"><span class="unit">minuti prima della 1ª partita</span></div>
+              </div>
+            </div>
+          </div>
+          <div class="modifier-block full-span" data-enabled="true">
+            <div class="role-row">
+              <div class="name">Sostituzioni durante la giornata</div>
+              <label class="switch"><input type="checkbox" class="mod-toggle" checked><span class="track"></span><span class="thumb"></span></label>
+            </div>
+            <div class="modifier-detail">
+              <div class="field" style="max-width:16rem;">
+                <label>Numero di sostituzioni ammesse</label>
+                <div class="credit-input"><input type="number" value="5" min="1" max="10"><span class="unit">o illimitate</span></div>
+              </div>
+              <div class="mode-cards cols-3">
+                <div class="mode-card active"><div class="t">Dinamica</div><div class="d">Panchina libera, con cambio modulo se serve</div></div>
+                <div class="mode-card"><div class="t">Ibrida</div><div class="d">Prima stesso ruolo, poi cambio modulo</div></div>
+                <div class="mode-card"><div class="t">Tradizionale</div><div class="d">Solo tra giocatori dello stesso ruolo</div></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card full">
+        <h2><span class="card-icon">🛡️</span> Modificatori</h2>
+        <p class="card-sub">Bonus e malus di reparto, calcolati sui voti base (senza bonus/malus) dei titolari. Attiva solo quelli usati nella tua lega.</p>
+
+        <div class="modifier-block" data-enabled="true">
+          <div class="role-row">
+            <div class="name">Modificatore portiere</div>
+            <label class="switch"><input type="checkbox" class="mod-toggle" checked><span class="track"></span><span class="thumb"></span></label>
+          </div>
+          <div class="modifier-detail">
+            <p class="hint">Si attiva quando il portiere prende un voto. Assegna un bonus alla sua squadra o un malus a quella avversaria.</p>
+            <div class="mini-fields">
+              <div class="field"><label>Bonus alla squadra del portiere</label><input type="number" value="1" step="0.5"></div>
+              <div class="field"><label>Malus alla squadra avversaria</label><input type="number" value="0" step="0.5"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="modifier-block" data-enabled="true" id="nl-mod-difesa">
+          <div class="role-row">
+            <div class="name">Modificatore difesa</div>
+            <label class="switch"><input type="checkbox" class="mod-toggle" checked><span class="track"></span><span class="thumb"></span></label>
+          </div>
+          <div class="modifier-detail">
+            <div class="field" style="max-width:22rem;">
+              <label>Si attiva schierando almeno</label>
+              <div class="credit-input"><input type="number" id="nl-mod-difesa-soglia" value="4" min="3" max="5"><span class="unit">difensori in campo</span></div>
+              <span class="hint">Media calcolata sui 3 migliori difensori + portiere</span>
+            </div>
+            <table class="bonus-table" style="margin-top:0.6rem;">
+              <thead><tr><th>Media voti base difesa</th><th class="val">Modificatore</th></tr></thead>
+              <tbody>
+                <tr><td>Meno di 5,5</td><td class="val">−1</td></tr>
+                <tr><td>5,5 – 5,99</td><td class="val">0</td></tr>
+                <tr><td>6 – 6,49</td><td class="val">+1</td></tr>
+                <tr><td>6,5 – 6,99</td><td class="val">+2</td></tr>
+                <tr><td>7 – 7,49</td><td class="val">+3</td></tr>
+                <tr><td>7,5 e oltre</td><td class="val">+4</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="modifier-block" data-enabled="true">
+          <div class="role-row">
+            <div class="name">Modificatore centrocampo</div>
+            <label class="switch"><input type="checkbox" class="mod-toggle" checked><span class="track"></span><span class="thumb"></span></label>
+          </div>
+          <div class="modifier-detail">
+            <p class="hint">Confronta il totale dei voti base dei centrocampisti delle due squadre. Chi ne schiera meno di modulo riceve un voto 5 per ogni centrocampista mancante, per pareggiare il conto.</p>
+            <div class="field" style="max-width:16rem;">
+              <label>Punti assegnati per ogni voto di scarto</label>
+              <input type="number" value="1" step="0.5">
+            </div>
+          </div>
+        </div>
+
+        <div class="modifier-block" data-enabled="false">
+          <div class="role-row">
+            <div class="name">Modificatore attacco</div>
+            <label class="switch"><input type="checkbox" class="mod-toggle"><span class="track"></span><span class="thumb"></span></label>
+          </div>
+          <div class="modifier-detail">
+            <p class="hint">Riguarda solo gli attaccanti con voto base ≥ 6 che non segnano, non fanno assist e non sbagliano rigori: ognuno di loro riceve il malus indicato.</p>
+            <div class="field" style="max-width:16rem;">
+              <label>Malus per attaccante "spento"</label>
+              <input type="number" value="-1" step="0.5">
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card full">
+        <h2><span class="card-icon">🧩</span> Moduli disponibili</h2>
+        <p class="card-sub">Seleziona i moduli che potrai schierare durante la stagione — determinano cosa potrai scegliere nella formazione.</p>
+        <div class="chip-group" id="nl-moduli">
+          <button class="chip active" data-modulo="3-4-3" type="button">3-4-3</button>
+          <button class="chip active" data-modulo="3-5-2" type="button">3-5-2</button>
+          <button class="chip active" data-modulo="4-3-3" type="button">4-3-3</button>
+          <button class="chip active" data-modulo="4-4-2" type="button">4-4-2</button>
+          <button class="chip" data-modulo="5-3-2" type="button">5-3-2</button>
+          <button class="chip" data-modulo="5-4-1" type="button">5-4-1</button>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="setup-footer">
+      <button class="btn primary" id="nl-create" type="button">Crea lega →</button>
+    </div>
+  </section>
+
+  <!-- ============ VIEW 2: HUB DI UNA LEGA ============ -->
+  <section id="view-lega" class="view wrap">
+    <button class="back-link" id="back-to-leghe" type="button">← Le tue leghe</button>
+
+    <div class="page-head">
+      <h1 id="lega-hub-name">Lega</h1>
+      <p>Scegli cosa fare: la rosa resta salvata finché non la modifichi tu, la formazione la puoi rifare a ogni giornata.</p>
+    </div>
+
+    <div class="hub-grid">
+      <button class="hub-card" id="go-rosa" type="button">
+        <div class="hub-icon">👕</div>
+        <h3>Rosa</h3>
+        <p class="desc" id="hub-rosa-desc">— giocatori salvati</p>
+        <span class="go">Gestisci rosa →</span>
+      </button>
+      <button class="hub-card highlight" id="go-formazione" type="button">
+        <div class="hub-icon">🧠</div>
+        <h3>Formazione</h3>
+        <p class="desc" id="hub-formazione-desc">Modulo, giocatori e scelta intelligente dell'AI</p>
+        <span class="go">Inserisci formazione →</span>
+      </button>
+    </div>
+  </section>
+
+  <!-- ============ VIEW 3: ROSA DELLA LEGA ============ -->
+  <section id="view-rosa" class="view wrap">
+    <button class="back-link" id="back-to-lega-from-rosa" type="button">← <span class="back-league-name"></span></button>
+
+    <div class="page-head">
+      <h1>Rosa — <span id="rosa-lega-name">Lega</span></h1>
+      <p>I giocatori acquistati per questa lega, presi dal listone. Aggiungi o rimuovi finché non corrisponde alla tua rosa reale — resta salvata per tutta la stagione.</p>
+    </div>
+
+    <div class="roster-editor">
+      <div class="rosa-toolbar">
+        <button class="btn primary" id="open-listone-picker" type="button">+ Aggiungi dal listone</button>
+        <label class="btn ghost listone-import-btn">
+          📄 Importa listone ufficiale
+          <input type="file" id="listone-file-rosa" accept=".xlsx,.xls,.csv" hidden>
+        </label>
+      </div>
+      <p class="listone-status" id="listone-status-rosa"></p>
+
+      <div class="roster-editor-list" id="rosa-editor-list"><!-- generata da script --></div>
+    </div>
+  </section>
+
+  <!-- ============ VIEW 4: FORMAZIONE DI UNA LEGA ============ -->
+  <section id="view-formazione" class="view wrap">
+    <button class="back-link" id="back-to-lega-from-formazione" type="button">← <span class="back-league-name"></span></button>
+
+    <div class="page-head">
+      <h1>Formazione — <span id="league-name">Lega</span></h1>
+      <p>Clicca su una maglia per scegliere chi schierare in quel ruolo — FantaAI ti mostra subito i migliori candidati della tua rosa salvata.</p>
+    </div>
+
+    <div class="picker-row">
+      <div class="picker-group">
+        <span class="picker-label">Giornata</span>
+        <div class="chip-row" id="giornata-picker">
+          <button class="chip active" data-giornata="1" type="button">G1</button>
+          <button class="chip" data-giornata="2" type="button">G2</button>
+          <button class="chip" data-giornata="3" type="button">G3</button>
+          <button class="chip" data-giornata="4" type="button">G4</button>
+        </div>
+      </div>
+      <div class="picker-group">
+        <span class="picker-label">Modulo</span>
+        <div class="chip-row" id="modulo-picker">
+          <button class="chip" data-modulo="3-4-3" type="button">3-4-3</button>
+          <button class="chip" data-modulo="3-5-2" type="button">3-5-2</button>
+          <button class="chip" data-modulo="4-3-3" type="button">4-3-3</button>
+          <button class="chip active" data-modulo="4-4-2" type="button">4-4-2</button>
+          <button class="chip" data-modulo="5-3-2" type="button">5-3-2</button>
+          <button class="chip" data-modulo="5-4-1" type="button">5-4-1</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="formazione-grid">
+      <div class="pitch-card">
+        <div class="pitch-card-head">
+          <h2>La tua formazione</h2>
+          <div class="pitch-card-head-right">
+            <span class="exp-total">Punti attesi: <b id="exp-total">—</b><span class="mod-badge" id="mod-badge" hidden></span></span>
+            <button class="btn ai-fill-btn" id="ai-fill" type="button">⚡ Scelta intelligente</button>
+          </div>
+        </div>
+        <p class="pitch-hint">Clicca su una maglia vuota o già assegnata per cambiare giocatore. La stella imposta il capitano.</p>
+        <div class="pitch-field" id="pitch-field"><!-- righe generate da script --></div>
+        <div class="pitch-actions">
+          <button class="btn primary" id="save-formazione" type="button">Salva questa formazione</button>
+          <span class="save-note" id="save-note"></span>
+        </div>
+      </div>
+
+      <div class="side-col">
+        <div class="insight-card">
+          <div class="k">Perché questa formazione</div>
+          <p id="insight-text">Scegli i giocatori maglia per maglia, oppure lascia fare tutto all'AI.</p>
+        </div>
+
+        <div class="panel-card">
+          <h3>Panchina</h3>
+          <div class="list" id="bench-list"></div>
+        </div>
+
+        <div class="panel-card">
+          <h3>Rosa salvata <span class="count-badge" id="rosa-count"></span></h3>
+          <div class="roster-list" id="roster-list"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<!-- overlay per la scelta del giocatore in un ruolo -->
+<div class="slot-picker-overlay" id="slot-picker-overlay" hidden>
+  <div class="slot-picker" role="dialog" aria-modal="true" aria-labelledby="slot-picker-title">
+    <div class="slot-picker-head">
+      <h3 id="slot-picker-title">Scegli il giocatore</h3>
+      <button class="slot-picker-close" id="slot-picker-close" type="button" aria-label="Chiudi">✕</button>
+    </div>
+    <input type="search" id="slot-picker-search" placeholder="Cerca nella rosa…">
+    <div class="slot-picker-actions">
+      <button type="button" class="btn ai-fill-btn" id="slot-ai-pick">⚡ Consigliato dall'AI</button>
+      <button type="button" class="btn ghost" id="slot-clear-btn" hidden>✕ Lascia vuota</button>
+    </div>
+    <div class="slot-picker-list" id="slot-picker-list"><!-- generata da script --></div>
+  </div>
+</div>
+
+<!-- overlay per aggiungere un giocatore alla rosa dal listone -->
+<div class="slot-picker-overlay" id="listone-picker-overlay" hidden>
+  <div class="slot-picker" role="dialog" aria-modal="true" aria-labelledby="listone-picker-title">
+    <div class="slot-picker-head">
+      <h3 id="listone-picker-title">Aggiungi dal listone</h3>
+      <button class="slot-picker-close" id="listone-picker-close" type="button" aria-label="Chiudi">✕</button>
+    </div>
+    <input type="search" id="listone-picker-search" placeholder="Cerca giocatore o squadra…">
+    <div class="chip-row listone-role-row" id="listone-picker-roles">
+      <button class="chip active" data-role="ALL" type="button">Tutti</button>
+      <button class="chip" data-role="P" type="button">P</button>
+      <button class="chip" data-role="D" type="button">D</button>
+      <button class="chip" data-role="C" type="button">C</button>
+      <button class="chip" data-role="A" type="button">A</button>
+    </div>
+    <div class="slot-picker-list" id="listone-picker-list"><!-- generata da script --></div>
+  </div>
+</div>
+
+<!-- overlay di conferma eliminazione lega -->
+<div class="slot-picker-overlay" id="delete-confirm-overlay" hidden>
+  <div class="slot-picker confirm-modal" role="dialog" aria-modal="true" aria-labelledby="delete-confirm-title">
+    <div class="slot-picker-head">
+      <h3 id="delete-confirm-title">Eliminare la lega?</h3>
+      <button class="slot-picker-close" id="delete-confirm-close" type="button" aria-label="Chiudi">✕</button>
+    </div>
+    <div class="confirm-body">
+      <p>Stai per eliminare <b id="delete-confirm-name">questa lega</b>. La rosa salvata e tutte le formazioni andranno perse — non si può annullare.</p>
+      <div class="confirm-actions">
+        <button class="btn ghost" id="delete-confirm-cancel" type="button">Annulla</button>
+        <button class="btn danger" id="delete-confirm-ok" type="button">Elimina definitivamente</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- overlay per creare una nuova lega -->
+<footer class="site wrap">Mockup della formazione ideale — dati d'esempio, nessun calcolo reale.</footer>
+
+<script src="js/xlsx.mini.min.js"></script>
+<script>
+  /* ---------------- salvataggio nel browser: leghe, rose, formazioni e listone restano dopo il refresh ---------------- */
+  const STORAGE_KEY = "fantaai-formazione";
+  function loadSaved() {
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (!raw) return null;
+      return JSON.parse(raw);
+    } catch { return null; }
+  }
+  function persist() {
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify({ LEAGUES, ROSTERS, formationState, MASTER_LISTONE }));
+    } catch { /* storage non disponibile: si continua solo in memoria */ }
+  }
+  const saved = loadSaved();
+
+  /* ---------------- listone: il database giocatori da cui si pesca per popolare le rose ---------------- */
+  /* catalogo di partenza — se importi il listone ufficiale (.xlsx/.csv) o se ne hai già uno salvato, questi vengono sostituiti */
+  let MASTER_LISTONE = (saved && saved.MASTER_LISTONE) || [
+    { role: "P", name: "Yann Sommer", team: "Inter", fvm: 120 },
+    { role: "P", name: "Michele Di Gregorio", team: "Juventus", fvm: 118 },
+    { role: "P", name: "Alex Meret", team: "Napoli", fvm: 110 },
+    { role: "P", name: "Ivan Provedel", team: "Lazio", fvm: 105 },
+    { role: "P", name: "Marco Sportiello", team: "Milan", fvm: 95 },
+    { role: "P", name: "Wojciech Szczęsny", team: "Barcellona", fvm: 90 },
+    { role: "D", name: "Alessandro Bastoni", team: "Inter", fvm: 210 },
+    { role: "D", name: "Francesco Acerbi", team: "Inter", fvm: 160 },
+    { role: "D", name: "Giovanni Di Lorenzo", team: "Napoli", fvm: 220 },
+    { role: "D", name: "Gleison Bremer", team: "Juventus", fvm: 195 },
+    { role: "D", name: "Theo Hernández", team: "Milan", fvm: 250 },
+    { role: "D", name: "Pierre Kalulu", team: "Juventus", fvm: 130 },
+    { role: "D", name: "Alessandro Buongiorno", team: "Napoli", fvm: 175 },
+    { role: "D", name: "Amir Rrahmani", team: "Napoli", fvm: 150 },
+    { role: "D", name: "Federico Gatti", team: "Juventus", fvm: 140 },
+    { role: "D", name: "Riccardo Calafiori", team: "Arsenal", fvm: 200 },
+    { role: "D", name: "Danilo", team: "Juventus", fvm: 120 },
+    { role: "D", name: "Destiny Udogie", team: "Tottenham", fvm: 165 },
+    { role: "C", name: "Nicolò Barella", team: "Inter", fvm: 310 },
+    { role: "C", name: "Weston McKennie", team: "Juventus", fvm: 190 },
+    { role: "C", name: "Piotr Zieliński", team: "Inter", fvm: 260 },
+    { role: "C", name: "Hakan Çalhanoğlu", team: "Inter", fvm: 320 },
+    { role: "C", name: "Giovanni Fabbian", team: "Bologna", fvm: 150 },
+    { role: "C", name: "Samuele Ricci", team: "Milan", fvm: 170 },
+    { role: "C", name: "Sandro Tonali", team: "Newcastle", fvm: 280 },
+    { role: "C", name: "Teun Koopmeiners", team: "Juventus", fvm: 250 },
+    { role: "C", name: "Davide Frattesi", team: "Inter", fvm: 220 },
+    { role: "C", name: "Lorenzo Pellegrini", team: "Roma", fvm: 200 },
+    { role: "C", name: "Manuel Locatelli", team: "Juventus", fvm: 175 },
+    { role: "A", name: "Lautaro Martínez", team: "Inter", fvm: 420 },
+    { role: "A", name: "Dušan Vlahović", team: "Juventus", fvm: 280 },
+    { role: "A", name: "Rafael Leão", team: "Milan", fvm: 350 },
+    { role: "A", name: "Marcus Thuram", team: "Inter", fvm: 360 },
+    { role: "A", name: "Moise Kean", team: "Fiorentina", fvm: 240 },
+    { role: "A", name: "Ademola Lookman", team: "Atalanta", fvm: 290 },
+    { role: "A", name: "Mateo Retegui", team: "Atalanta", fvm: 270 },
+    { role: "A", name: "Albert Guðmundsson", team: "Fiorentina", fvm: 210 },
+    { role: "A", name: "Ciro Immobile", team: "Lazio", fvm: 230 },
+    { role: "A", name: "Domenico Berardi", team: "Sassuolo", fvm: 200 },
+    { role: "A", name: "Matteo Politano", team: "Napoli", fvm: 190 },
+    { role: "A", name: "Federico Chiesa", team: "Liverpool", fvm: 215 },
+  ];
+
+  // trasforma una voce del listone (name/team/role/fvm) in un giocatore pronto per la rosa
+  function playerFromListone(entry) {
+    const exp = +(5.8 + Math.min(entry.fvm, 500) / 500 * 1.8).toFixed(1);
+    const risk = entry.fvm > 280 ? "basso" : entry.fvm > 150 ? "medio" : "alto";
+    const player = { name: entry.name, team: entry.team, exp, risk };
+    if (entry.role === "P" || entry.role === "D") player.votoBase = +(exp - 0.15).toFixed(2);
+    return player;
+  }
+
+  const ROSTERS = (saved && saved.ROSTERS) || {};
+  const LEAGUES = (saved && saved.LEAGUES) || [];
+
+  const MODULES = {
+    "3-4-3": [3, 4, 3],
+    "3-5-2": [3, 5, 2],
+    "4-3-3": [4, 3, 3],
+    "4-4-2": [4, 4, 2],
+    "5-3-2": [5, 3, 2],
+    "5-4-1": [5, 4, 1],
+  };
+
+  const roleLabel = { P: "portiere", D: "difensore", C: "centrocampista", A: "attaccante" };
+  const roleLabelFull = { P: "Portiere", D: "Difensore", C: "Centrocampista", A: "Attaccante" };
+  const riskLabel = { basso: "Rischio basso", medio: "Rischio medio", alto: "Rischio alto" };
+
+  // regola "modificatore difesa": con almeno questa soglia di difensori in campo,
+  // si fa la media dei voti base dei 3 migliori difensori + il portiere.
+  // soglia e attivazione arrivano dalle impostazioni scelte alla creazione della lega.
+  function modDifesaSoglia(league) { return (league.modificatori && league.modificatori.difesaSoglia) || 4; }
+  function modDifesaAttivo(league) { return !league.modificatori || league.modificatori.difesaAttivo !== false; }
+  function defenseModifier(avg) {
+    if (avg >= 7.5) return 4;
+    if (avg >= 7) return 3;
+    if (avg >= 6.5) return 2;
+    if (avg >= 6) return 1;
+    if (avg >= 5.5) return 0;
+    return -1;
+  }
+
+  let currentLeague = null;
+  let currentGiornata = 1;
+  let currentModulo = "4-4-2";
+  let formationState = (saved && saved.formationState) || {}; // "leagueId|giornata" -> { modulo, P:[name], D:[name...], C:[...], A:[...], captain:name }
+
+  function rosterOf(league) { return ROSTERS[league.id]; }
+  function rosterCount(league) {
+    const r = rosterOf(league);
+    return r.P.length + r.D.length + r.C.length + r.A.length;
+  }
+
+  // variazione deterministica dei punti attesi per lega/giornata, solo per far vedere che cambia
+  function adjustedExp(player, league, giornata) {
+    const seedShift = Math.sin((player.name.length + league.seed * 3 + giornata) * 1.7) * 0.3;
+    return Math.max(5.5, +(player.exp + seedShift).toFixed(1));
+  }
+
+  function initials(name) {
+    return name.split(" ").map(w => w[0]).slice(0, 2).join("").toUpperCase();
+  }
+
+  function playerWithExp(role, name) {
+    const base = rosterOf(currentLeague)[role].find(p => p.name === name);
+    if (!base) return null;
+    return { ...base, role, adjExp: adjustedExp(base, currentLeague, currentGiornata) };
+  }
+
+  function ratedRole(role) {
+    return rosterOf(currentLeague)[role]
+      .map(p => ({ ...p, role, adjExp: adjustedExp(p, currentLeague, currentGiornata) }))
+      .sort((a, b) => b.adjExp - a.adjExp);
+  }
+
+  /* ---------------- vista: le mie leghe ---------------- */
+  function renderLeagueGrid() {
+    const grid = document.getElementById("league-grid");
+    grid.innerHTML = "";
+    LEAGUES.forEach(l => {
+      const card = document.createElement("div");
+      card.className = "league-card";
+      card.setAttribute("role", "button");
+      card.setAttribute("tabindex", "0");
+      card.dataset.league = l.id;
+      card.innerHTML = `
+        <div class="league-card-top">
+          <span class="league-icon">🏆</span>
+          <span class="league-card-top-right">
+            <span class="squadre-badge">${l.squadre} squadre</span>
+            <button type="button" class="league-delete" data-delete-league="${l.id}" aria-label="Elimina ${l.name}" title="Elimina lega">🗑</button>
+          </span>
+        </div>
+        <h3>${l.name}</h3>
+        <div class="league-meta">
+          <span>${l.crediti} crediti</span>
+          <span>Rosa: ${rosterCount(l)} giocatori</span>
+          <span>Modulo preferito ${l.modulo}</span>
+        </div>
+        <div class="league-foot">
+          <span>Salvata il ${l.salvata}</span>
+          <span class="go">Apri lega →</span>
+        </div>`;
+      grid.appendChild(card);
+    });
+    const addCard = document.createElement("div");
+    addCard.className = "league-card new-league";
+    addCard.setAttribute("role", "button");
+    addCard.setAttribute("tabindex", "0");
+    addCard.innerHTML = `<span class="plus">+</span><span>Nuova lega</span><span class="new-sub">Importa la rosa dall'asta o inseriscila a mano</span>`;
+    grid.appendChild(addCard);
+  }
+
+  document.getElementById("league-grid").addEventListener("click", (e) => {
+    const delBtn = e.target.closest(".league-delete");
+    if (delBtn) { openDeleteConfirm(delBtn.dataset.deleteLeague); return; }
+    if (e.target.closest(".new-league")) { openNuovaLegaView(); return; }
+    const card = e.target.closest(".league-card");
+    if (!card) return;
+    currentLeague = LEAGUES.find(l => l.id === card.dataset.league);
+    openLegaHub();
+  });
+  document.getElementById("league-grid").addEventListener("keydown", (e) => {
+    if (e.key !== "Enter" && e.key !== " ") return;
+    const card = e.target.closest(".league-card");
+    if (!card) return;
+    e.preventDefault();
+    card.click();
+  });
+
+  /* ---------------- eliminazione lega ---------------- */
+  const deleteOverlay = document.getElementById("delete-confirm-overlay");
+  let pendingDeleteId = null;
+
+  function openDeleteConfirm(leagueId) {
+    const league = LEAGUES.find(l => l.id === leagueId);
+    if (!league) return;
+    pendingDeleteId = leagueId;
+    document.getElementById("delete-confirm-name").textContent = league.name;
+    deleteOverlay.hidden = false;
+  }
+  function closeDeleteConfirm() { deleteOverlay.hidden = true; pendingDeleteId = null; }
+
+  document.getElementById("delete-confirm-close").addEventListener("click", closeDeleteConfirm);
+  document.getElementById("delete-confirm-cancel").addEventListener("click", closeDeleteConfirm);
+  deleteOverlay.addEventListener("click", (e) => { if (e.target === deleteOverlay) closeDeleteConfirm(); });
+  document.addEventListener("keydown", (e) => { if (e.key === "Escape" && !deleteOverlay.hidden) closeDeleteConfirm(); });
+
+  document.getElementById("delete-confirm-ok").addEventListener("click", () => {
+    if (!pendingDeleteId) return;
+    const idx = LEAGUES.findIndex(l => l.id === pendingDeleteId);
+    if (idx !== -1) LEAGUES.splice(idx, 1);
+    delete ROSTERS[pendingDeleteId];
+    Object.keys(formationState).forEach(key => { if (key.startsWith(pendingDeleteId + "|")) delete formationState[key]; });
+    persist();
+    closeDeleteConfirm();
+    renderLeagueGrid();
+  });
+
+  document.getElementById("back-to-leghe-from-nuova").addEventListener("click", () => { renderLeagueGrid(); switchView("view-leghe"); });
+
+  /* ---------------- creazione nuova lega: stessi controlli della pagina asta ---------------- */
+  function openNuovaLegaView() {
+    document.getElementById("nl-name").value = "";
+    document.getElementById("nl-squadre").value = 8;
+    document.getElementById("nl-crediti").value = 500;
+    nlRoleCounts.p = 3; nlRoleCounts.d = 8; nlRoleCounts.c = 8; nlRoleCounts.a = 6;
+    ["p", "d", "c", "a"].forEach(r => document.getElementById("nl-count-" + r).textContent = nlRoleCounts[r]);
+    document.getElementById("nl-role-total").textContent = 25;
+    document.querySelectorAll("#nl-modalita .mode-card").forEach((c, i) => c.classList.toggle("active", i === 0));
+    document.querySelectorAll("#nl-market-type .chip").forEach((c, i) => c.classList.toggle("active", i === 0));
+    document.querySelectorAll("#nl-moduli .chip").forEach(c => c.classList.toggle("active", ["3-4-3", "3-5-2", "4-3-3", "4-4-2"].includes(c.dataset.modulo)));
+    document.getElementById("nl-mod-difesa-soglia").value = 4;
+    document.querySelectorAll(".modifier-block .mod-toggle").forEach(t => { t.checked = !t.closest(".modifier-block").querySelector(".name").textContent.includes("attacco"); t.closest(".modifier-block").dataset.enabled = t.checked; });
+    switchView("view-nuova-lega");
+    document.getElementById("nl-name").focus();
+  }
+
+  // stepper composizione rosa (nuova lega)
+  const nlRoleCounts = { p: 3, d: 8, c: 8, a: 6 };
+  document.querySelectorAll("#view-nuova-lega .stepper-mini button[data-nlrole]").forEach(btn => {
+    btn.addEventListener("click", () => {
+      const role = btn.dataset.nlrole;
+      nlRoleCounts[role] = Math.max(0, nlRoleCounts[role] + parseInt(btn.dataset.step, 10));
+      document.getElementById("nl-count-" + role).textContent = nlRoleCounts[role];
+      document.getElementById("nl-role-total").textContent = Object.values(nlRoleCounts).reduce((a, b) => a + b, 0);
+    });
+  });
+
+  // selezione singola: modalità e tipo di mercato
+  ["#nl-modalita", "#nl-market-type"].forEach(sel => {
+    const group = document.querySelector(sel);
+    group.addEventListener("click", (e) => {
+      const item = e.target.closest(".mode-card, .chip"); if (!item) return;
+      group.querySelectorAll(".mode-card, .chip").forEach(x => x.classList.remove("active"));
+      item.classList.add("active");
+    });
+  });
+
+  // selezione multipla: moduli disponibili
+  document.getElementById("nl-moduli").addEventListener("click", (e) => {
+    const chip = e.target.closest(".chip"); if (!chip) return;
+    chip.classList.toggle("active");
+  });
+
+  // interruttori dei modificatori nella creazione lega (stesso comportamento della pagina asta)
+  document.querySelectorAll("#view-nuova-lega .mod-toggle").forEach(t => {
+    t.addEventListener("change", () => { t.closest(".modifier-block").dataset.enabled = t.checked; });
+  });
+
+  document.getElementById("nl-create").addEventListener("click", () => {
+    const nameInput = document.getElementById("nl-name");
+    const name = nameInput.value.trim();
+    if (!name) { nameInput.focus(); switchView("view-nuova-lega"); return; }
+    const id = "lega-" + Date.now();
+    const moduliDisponibili = [...document.querySelectorAll("#nl-moduli .chip.active")].map(c => c.dataset.modulo);
+    const league = {
+      id, name,
+      squadre: parseInt(document.getElementById("nl-squadre").value, 10) || 8,
+      crediti: parseInt(document.getElementById("nl-crediti").value, 10) || 500,
+      modulo: moduliDisponibili[0] || "4-4-2",
+      modalita: document.querySelector("#nl-modalita .mode-card.active .t").textContent,
+      tipoMercato: document.querySelector("#nl-market-type .chip.active").textContent,
+      moduliDisponibili: moduliDisponibili.length ? moduliDisponibili : ["4-4-2"],
+      modificatori: {
+        difesaAttivo: document.getElementById("nl-mod-difesa").dataset.enabled === "true",
+        difesaSoglia: parseInt(document.getElementById("nl-mod-difesa-soglia").value, 10) || 4,
+      },
+      salvata: "oggi",
+      seed: LEAGUES.length,
+    };
+    LEAGUES.push(league);
+    ROSTERS[id] = { P: [], D: [], C: [], A: [] };
+    persist();
+    currentLeague = league;
+    openLegaHub();
+  });
+
+  function switchView(id) {
+    document.querySelectorAll("#view-leghe.view, #view-nuova-lega.view, #view-lega.view, #view-rosa.view, #view-formazione.view")
+      .forEach(v => v.classList.remove("active"));
+    document.getElementById(id).classList.add("active");
+  }
+
+  /* ---------------- vista: hub della lega ---------------- */
+  function openLegaHub() {
+    document.getElementById("lega-hub-name").textContent = currentLeague.name;
+    document.querySelectorAll(".back-league-name").forEach(el => el.textContent = currentLeague.name);
+    refreshHubDesc();
+    switchView("view-lega");
+  }
+
+  function refreshHubDesc() {
+    document.getElementById("hub-rosa-desc").textContent = rosterCount(currentLeague) + " giocatori salvati";
+    const key = currentLeague.id + "|" + currentGiornata;
+    const state = formationState[key];
+    document.getElementById("hub-formazione-desc").textContent = state
+      ? `Ultima formazione: modulo ${state.modulo}, giornata ${currentGiornata}`
+      : "Modulo, giocatori e scelta intelligente dell'AI";
+  }
+
+  document.getElementById("back-to-leghe").addEventListener("click", () => { renderLeagueGrid(); switchView("view-leghe"); });
+  document.getElementById("back-to-lega-from-rosa").addEventListener("click", openLegaHub);
+  document.getElementById("back-to-lega-from-formazione").addEventListener("click", openLegaHub);
+
+  /* ---------------- vista: rosa della lega ---------------- */
+  document.getElementById("go-rosa").addEventListener("click", () => {
+    document.getElementById("rosa-lega-name").textContent = currentLeague.name;
+    renderRosaEditor();
+    switchView("view-rosa");
+  });
+
+  function renderRosaEditor() {
+    const roster = rosterOf(currentLeague);
+    const list = document.getElementById("rosa-editor-list");
+    list.innerHTML = "";
+    ["P", "D", "C", "A"].forEach(role => {
+      roster[role].forEach((p, index) => {
+        const row = document.createElement("div");
+        row.className = "roster-editor-row";
+        row.innerHTML = `
+          <span class="role-pill ${role}">${role}</span>
+          <span class="rname">${p.name}</span>
+          <span class="rteam">${p.team}</span>
+          <button type="button" class="rm-player" data-role="${role}" data-index="${index}" aria-label="Rimuovi ${p.name}">✕</button>`;
+        list.appendChild(row);
+      });
+    });
+  }
+
+  document.getElementById("rosa-editor-list").addEventListener("click", (e) => {
+    const btn = e.target.closest(".rm-player"); if (!btn) return;
+    rosterOf(currentLeague)[btn.dataset.role].splice(parseInt(btn.dataset.index, 10), 1);
+    persist();
+    renderRosaEditor();
+  });
+
+  /* ---------------- selettore "aggiungi dal listone" ---------------- */
+  const listoneOverlay = document.getElementById("listone-picker-overlay");
+  const listoneList = document.getElementById("listone-picker-list");
+  const listoneSearch = document.getElementById("listone-picker-search");
+  let listoneRoleFilter = "ALL";
+
+  function openListonePicker() {
+    listoneSearch.value = "";
+    listoneRoleFilter = "ALL";
+    document.querySelectorAll("#listone-picker-roles .chip").forEach(c => c.classList.toggle("active", c.dataset.role === "ALL"));
+    renderListonePickerList();
+    listoneOverlay.hidden = false;
+    listoneSearch.focus();
+  }
+  function closeListonePicker() { listoneOverlay.hidden = true; }
+
+  document.getElementById("open-listone-picker").addEventListener("click", openListonePicker);
+  document.getElementById("listone-picker-close").addEventListener("click", closeListonePicker);
+  listoneOverlay.addEventListener("click", (e) => { if (e.target === listoneOverlay) closeListonePicker(); });
+  document.addEventListener("keydown", (e) => { if (e.key === "Escape" && !listoneOverlay.hidden) closeListonePicker(); });
+
+  document.getElementById("listone-picker-roles").addEventListener("click", (e) => {
+    const b = e.target.closest(".chip"); if (!b) return;
+    document.querySelectorAll("#listone-picker-roles .chip").forEach(x => x.classList.remove("active"));
+    b.classList.add("active");
+    listoneRoleFilter = b.dataset.role;
+    renderListonePickerList();
+  });
+  listoneSearch.addEventListener("input", renderListonePickerList);
+
+  function renderListonePickerList() {
+    const q = listoneSearch.value.trim().toLowerCase();
+    const roster = rosterOf(currentLeague);
+    const already = new Set(["P", "D", "C", "A"].flatMap(r => roster[r].map(p => p.name)));
+
+    const candidates = MASTER_LISTONE
+      .filter(p => listoneRoleFilter === "ALL" || p.role === listoneRoleFilter)
+      .filter(p => !q || p.name.toLowerCase().includes(q) || p.team.toLowerCase().includes(q))
+      .sort((a, b) => b.fvm - a.fvm);
+
+    listoneList.innerHTML = candidates.map(p => {
+      const inRosa = already.has(p.name);
+      return `
+        <button type="button" class="picker-row${inRosa ? " current" : ""}" data-name="${p.name}" ${inRosa ? "disabled" : ""}>
+          <span class="role-pill ${p.role}">${p.role}</span>
+          <span class="picker-name">${p.name}<span class="picker-team">${p.team}</span></span>
+          <span class="picker-exp">FVM ${p.fvm}</span>
+          ${inRosa ? '<span class="picker-swap">già in rosa</span>' : '<span class="picker-add">+ Inserisci</span>'}
+        </button>`;
+    }).join("") || '<p class="hint">Nessun giocatore trovato nel listone.</p>';
+  }
+
+  listoneList.addEventListener("click", (e) => {
+    const row = e.target.closest(".picker-row"); if (!row || row.disabled) return;
+    const entry = MASTER_LISTONE.find(p => p.name === row.dataset.name);
+    if (!entry) return;
+    rosterOf(currentLeague)[entry.role].push(playerFromListone(entry));
+    persist();
+    renderRosaEditor();
+    renderListonePickerList();
+  });
+
+  /* ---------------- import listone ufficiale (.xlsx / .xls / .csv) ---------------- */
+  const HEADER_ALIASES_ROSA = { r: ["r"], nome: ["nome"], squadra: ["squadra"], fvm: ["fvm"], qta: ["qta"] };
+  const normalizeHeaderRosa = h => String(h).toLowerCase().replace(/[\s.]/g, "");
+
+  function showListoneStatus(kind, message) {
+    const box = document.getElementById("listone-status-rosa");
+    box.hidden = false;
+    box.className = "listone-status " + kind;
+    box.textContent = message;
+  }
+
+  document.getElementById("listone-file-rosa").addEventListener("change", (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const isCsv = /\.csv$/i.test(file.name);
+    const reader = new FileReader();
+    reader.onerror = () => showListoneStatus("error", "Non sono riuscito a leggere il file. Riprova.");
+    reader.onload = (ev) => {
+      try {
+        const workbook = isCsv ? XLSX.read(ev.target.result, { type: "string" }) : XLSX.read(ev.target.result, { type: "array" });
+        const sheet = workbook.Sheets[workbook.SheetNames[0]];
+        const rowsData = XLSX.utils.sheet_to_json(sheet, { defval: "" });
+        if (!rowsData.length) { showListoneStatus("error", "Il file sembra vuoto."); return; }
+
+        const originalKeys = Object.keys(rowsData[0]);
+        const colFor = {};
+        originalKeys.forEach(k => {
+          const norm = normalizeHeaderRosa(k);
+          Object.entries(HEADER_ALIASES_ROSA).forEach(([field, aliases]) => { if (aliases.includes(norm)) colFor[field] = k; });
+        });
+        if (!colFor.r || !colFor.nome || !colFor.squadra) {
+          showListoneStatus("error", "Colonne obbligatorie mancanti: servono almeno R, Nome e Squadra.");
+          return;
+        }
+
+        const imported = rowsData
+          .map(row => ({
+            role: String(row[colFor.r]).trim().toUpperCase(),
+            name: String(row[colFor.nome]).trim(),
+            team: String(row[colFor.squadra]).trim(),
+            fvm: parseFloat(row[colFor.fvm]) || parseFloat(row[colFor.qta]) * 10 || 100,
+          }))
+          .filter(p => p.name && ["P", "D", "C", "A"].includes(p.role));
+
+        if (!imported.length) { showListoneStatus("error", "Nessun giocatore valido trovato nel file."); return; }
+
+        MASTER_LISTONE = imported;
+        persist();
+        showListoneStatus("ok", `Listone aggiornato: ${imported.length} giocatori disponibili da "${file.name}".`);
+        renderListonePickerList();
+      } catch (err) {
+        showListoneStatus("error", "Formato file non riconosciuto. Assicurati che sia un .xlsx, .xls o .csv valido.");
+      }
+    };
+    if (isCsv) reader.readAsText(file); else reader.readAsArrayBuffer(file);
+  });
+
+  /* ---------------- vista: formazione ---------------- */
+  document.getElementById("go-formazione").addEventListener("click", () => {
+    currentGiornata = 1;
+    document.getElementById("league-name").textContent = currentLeague.name;
+    document.querySelectorAll("#giornata-picker .chip").forEach(c => c.classList.toggle("active", c.dataset.giornata === "1"));
+    document.getElementById("save-note").textContent = "";
+    document.getElementById("save-note").className = "save-note";
+    // mostra solo i moduli scelti per questa lega in fase di creazione
+    const disponibili = currentLeague.moduliDisponibili || Object.keys(MODULES);
+    document.querySelectorAll("#modulo-picker .chip").forEach(c => {
+      c.hidden = !disponibili.includes(c.dataset.modulo);
+    });
+    switchView("view-formazione");
+    loadStateForGiornata(currentGiornata, currentLeague.modulo);
+  });
+
+  function stateKey(giornata) { return currentLeague.id + "|" + giornata; }
+
+  function emptySlots(modulo) {
+    const [nd, nc, na] = MODULES[modulo];
+    return { modulo, P: [null], D: Array(nd).fill(null), C: Array(nc).fill(null), A: Array(na).fill(null), captain: null };
+  }
+
+  function autoFillState(modulo, giornata) {
+    const [nd, nc, na] = MODULES[modulo];
+    const D = ratedRole("D"), C = ratedRole("C"), A = ratedRole("A"), P = ratedRole("P");
+    const starters = { P: [P[0].name], D: D.slice(0, nd).map(p => p.name), C: C.slice(0, nc).map(p => p.name), A: A.slice(0, na).map(p => p.name) };
+    const captainPool = [...C.slice(0, nc), ...A.slice(0, na)].sort((a, b) => b.adjExp - a.adjExp);
+    return { modulo, ...starters, captain: captainPool[0] ? captainPool[0].name : P[0].name };
+  }
+
+  function resizeState(state, modulo) {
+    const [nd, nc, na] = MODULES[modulo];
+    const resize = (arr, n) => { const a = arr.slice(0, n); while (a.length < n) a.push(null); return a; };
+    return { ...state, modulo, D: resize(state.D, nd), C: resize(state.C, nc), A: resize(state.A, na) };
+  }
+
+  function loadStateForGiornata(giornata, fallbackModulo) {
+    currentGiornata = giornata;
+    const key = stateKey(giornata);
+    let state = formationState[key];
+    if (!state) {
+      state = emptySlots(fallbackModulo || currentModulo);
+      formationState[key] = state;
+    }
+    currentModulo = state.modulo;
+    document.querySelectorAll("#modulo-picker .chip").forEach(c => c.classList.toggle("active", c.dataset.modulo === currentModulo));
+    renderAll();
+  }
+
+  function getState() { return formationState[stateKey(currentGiornata)]; }
+  function saveState(state) { formationState[stateKey(currentGiornata)] = state; persist(); }
+
+  document.getElementById("giornata-picker").addEventListener("click", (e) => {
+    const b = e.target.closest(".chip"); if (!b) return;
+    document.querySelectorAll("#giornata-picker .chip").forEach(x => x.classList.remove("active"));
+    b.classList.add("active");
+    loadStateForGiornata(parseInt(b.dataset.giornata, 10), currentLeague.modulo);
+  });
+
+  document.getElementById("modulo-picker").addEventListener("click", (e) => {
+    const b = e.target.closest(".chip"); if (!b) return;
+    document.querySelectorAll("#modulo-picker .chip").forEach(x => x.classList.remove("active"));
+    b.classList.add("active");
+    currentModulo = b.dataset.modulo;
+    saveState(resizeState(getState(), currentModulo));
+    renderAll();
+  });
+
+  document.getElementById("ai-fill").addEventListener("click", () => {
+    saveState(autoFillState(currentModulo, currentGiornata));
+    renderAll();
+  });
+
+  function assignToSlot(role, index, name) {
+    const state = getState();
+    const arr = state[role];
+    const swapIdx = arr.indexOf(name);
+    if (swapIdx !== -1 && swapIdx !== index) arr[swapIdx] = arr[index];
+    arr[index] = name;
+    const filledNames = [...state.P, ...state.D, ...state.C, ...state.A].filter(Boolean);
+    if (!state.captain || !filledNames.includes(state.captain)) state.captain = name;
+    saveState(state);
+    renderAll();
+  }
+
+  function setCaptain(name) {
+    const state = getState();
+    state.captain = name;
+    saveState(state);
+    renderAll();
+  }
+
+  function clearSlot(role, index) {
+    const state = getState();
+    const removed = state[role][index];
+    state[role][index] = null;
+    if (state.captain === removed) state.captain = null;
+    saveState(state);
+    renderAll();
+  }
+
+  /* ---------------- selettore giocatore per slot ---------------- */
+  let pendingSlot = null;
+  const overlay = document.getElementById("slot-picker-overlay");
+  const pickerList = document.getElementById("slot-picker-list");
+  const pickerSearch = document.getElementById("slot-picker-search");
+
+  function openSlotPicker(role, index) {
+    const state = getState();
+    const currentName = state[role][index];
+    const best = ratedRole(role)[0];
+    pendingSlot = { role, index, bestName: best ? best.name : null };
+    document.getElementById("slot-picker-title").textContent = "Scegli il " + roleLabel[role];
+    document.getElementById("slot-clear-btn").hidden = !currentName;
+    pickerSearch.value = "";
+    renderPickerList("");
+    overlay.hidden = false;
+    pickerSearch.focus();
+  }
+
+  function closeSlotPicker() {
+    overlay.hidden = true;
+    pendingSlot = null;
+  }
+
+  function renderPickerList(query) {
+    if (!pendingSlot) return;
+    const state = getState();
+    const usedElsewhere = new Set([...state.P, ...state.D, ...state.C, ...state.A].filter(Boolean));
+    const currentName = state[pendingSlot.role][pendingSlot.index];
+    const q = query.trim().toLowerCase();
+
+    const candidates = ratedRole(pendingSlot.role).filter(p => !q || p.name.toLowerCase().includes(q));
+
+    const rowHtml = (p) => {
+      const isUsed = usedElsewhere.has(p.name) && p.name !== currentName;
+      const isCurrent = p.name === currentName;
+      const isBest = p.name === pendingSlot.bestName;
+      return `
+        <button type="button" class="picker-row${isCurrent ? " current" : ""}${isBest ? " recommended" : ""}" data-name="${p.name}">
+          <span class="role-pill ${p.role}">${p.role}</span>
+          <span class="picker-name">${p.name}<span class="picker-team">${p.team}</span></span>
+          <span class="picker-exp">${p.adjExp.toFixed(1)} pt.</span>
+          <span class="risk-dot risk-${p.risk}" title="${riskLabel[p.risk]}"></span>
+          ${isBest ? '<span class="picker-swap ai-pick">⚡ consigliato AI</span>' : ""}
+          ${isCurrent ? '<span class="picker-swap">titolare qui</span>' : isUsed ? '<span class="picker-add">↔ Scambia</span>' : '<span class="picker-add">+ Scegli</span>'}
+        </button>`;
+    };
+
+    const schierati = candidates.filter(p => usedElsewhere.has(p.name));
+    const disponibili = candidates.filter(p => !usedElsewhere.has(p.name));
+
+    let html = "";
+    if (schierati.length) {
+      html += `<div class="picker-section-label">Già schierati in formazione (${schierati.length})</div>` + schierati.map(rowHtml).join("");
+    }
+    if (disponibili.length) {
+      html += `<div class="picker-section-label">Disponibili in rosa (${disponibili.length})</div>` + disponibili.map(rowHtml).join("");
+    }
+    pickerList.innerHTML = html || '<p class="hint">Nessun giocatore trovato. Aggiungilo dalla Rosa della lega.</p>';
+  }
+
+  pickerSearch.addEventListener("input", () => renderPickerList(pickerSearch.value));
+  document.getElementById("slot-picker-close").addEventListener("click", closeSlotPicker);
+  overlay.addEventListener("click", (e) => { if (e.target === overlay) closeSlotPicker(); });
+  document.addEventListener("keydown", (e) => { if (e.key === "Escape" && !overlay.hidden) closeSlotPicker(); });
+  pickerList.addEventListener("click", (e) => {
+    const row = e.target.closest(".picker-row"); if (!row) return;
+    assignToSlot(pendingSlot.role, pendingSlot.index, row.dataset.name);
+    closeSlotPicker();
+  });
+  document.getElementById("slot-ai-pick").addEventListener("click", () => {
+    if (!pendingSlot || !pendingSlot.bestName) return;
+    assignToSlot(pendingSlot.role, pendingSlot.index, pendingSlot.bestName);
+    closeSlotPicker();
+  });
+  document.getElementById("slot-clear-btn").addEventListener("click", () => {
+    if (!pendingSlot) return;
+    clearSlot(pendingSlot.role, pendingSlot.index);
+    closeSlotPicker();
+  });
+
+  /* ---------------- render formazione ---------------- */
+  function renderAll() {
+    if (!currentLeague) return;
+    const state = getState();
+    renderPitch(state);
+    renderBench(state);
+    renderRoster();
+
+    const filled = ["P", "D", "C", "A"].flatMap(role => state[role].map((name, i) => ({ role, index: i, name })));
+    const filledPlayers = filled.filter(f => f.name).map(f => playerWithExp(f.role, f.name));
+    let total = filledPlayers.reduce((s, p) => s + p.adjExp, 0);
+    const missing = filled.length - filledPlayers.length;
+
+    const badge = document.getElementById("mod-badge");
+    let modText = "";
+    const dFilled = state.D.filter(Boolean).map(n => playerWithExp("D", n));
+    const gk = state.P[0] ? playerWithExp("P", state.P[0]) : null;
+    if (modDifesaAttivo(currentLeague) && dFilled.length >= modDifesaSoglia(currentLeague) && gk && gk.votoBase != null) {
+      const top3 = [...dFilled].sort((a, b) => b.votoBase - a.votoBase).slice(0, 3);
+      const values = [...top3.map(p => p.votoBase), gk.votoBase];
+      const avg = values.reduce((s, v) => s + v, 0) / values.length;
+      const mod = defenseModifier(avg);
+      total += mod;
+      badge.hidden = false;
+      badge.textContent = `${mod >= 0 ? "+" : ""}${mod} mod. difesa`;
+      badge.className = "mod-badge " + (mod > 0 ? "pos" : mod < 0 ? "neg" : "neutral");
+      modText = ` Con ${dFilled.length} difensori in campo si attiva il modificatore difesa: media voti base ${avg.toFixed(2)} → ${mod >= 0 ? "+" : ""}${mod}.`;
+    } else {
+      badge.hidden = true;
+    }
+
+    document.getElementById("exp-total").textContent = total.toFixed(1);
+    const captain = state.captain ? playerWithExp(
+      ["P", "D", "C", "A"].find(r => state[r].includes(state.captain)), state.captain
+    ) : null;
+
+    const note = document.getElementById("save-note");
+    if (missing > 0) {
+      note.textContent = `Formazione incompleta: mancano ${missing} maglie.`;
+      note.className = "save-note warn";
+    } else {
+      note.textContent = "";
+      note.className = "save-note";
+    }
+
+    document.getElementById("insight-text").textContent = captain
+      ? `Modulo ${currentModulo} · ${captain.name} è il capitano (${captain.adjExp.toFixed(1)} punti attesi).` + modText
+      : "Scegli i giocatori maglia per maglia, oppure lascia fare tutto all'AI.";
+  }
+
+  function renderPitch(state) {
+    const field = document.getElementById("pitch-field");
+    field.innerHTML = "";
+    ["A", "C", "D", "P"].forEach(role => {
+      const row = document.createElement("div");
+      row.className = "pitch-row";
+      state[role].forEach((name, index) => {
+        const slot = document.createElement("div");
+        slot.className = "player-chip";
+        if (name) {
+          const p = playerWithExp(role, name);
+          const isCap = state.captain === name;
+          slot.innerHTML = `
+            <button type="button" class="dot role-${role}${isCap ? " cap" : ""}" data-role="${role}" data-index="${index}">${initials(p.name)}</button>
+            <button type="button" class="cap-star${isCap ? " active" : ""}" title="Imposta capitano" data-cap="${p.name}">★</button>
+            <button type="button" class="clear-slot" title="Rimuovi dalla formazione" data-clear-role="${role}" data-clear-index="${index}">✕</button>
+            <div class="name">${p.name.split(" ").slice(-1)[0]}</div>
+            <div class="exp">${p.adjExp.toFixed(1)}</div>`;
+        } else {
+          slot.innerHTML = `
+            <button type="button" class="dot empty" data-role="${role}" data-index="${index}">+</button>
+            <div class="name">${roleLabel[role]}</div>
+            <div class="exp">—</div>`;
+        }
+        row.appendChild(slot);
+      });
+      field.appendChild(row);
+    });
+  }
+
+  document.getElementById("pitch-field").addEventListener("click", (e) => {
+    const clearBtn = e.target.closest(".clear-slot");
+    if (clearBtn) { clearSlot(clearBtn.dataset.clearRole, parseInt(clearBtn.dataset.clearIndex, 10)); return; }
+    const capBtn = e.target.closest(".cap-star");
+    if (capBtn) { setCaptain(capBtn.dataset.cap); return; }
+    const dot = e.target.closest(".dot");
+    if (dot) openSlotPicker(dot.dataset.role, parseInt(dot.dataset.index, 10));
+  });
+
+  function renderBench(state) {
+    const used = new Set([...state.P, ...state.D, ...state.C, ...state.A].filter(Boolean));
+    const bench = ["P", "D", "C", "A"].flatMap(role => ratedRole(role).filter(p => !used.has(p.name)));
+    const list = document.getElementById("bench-list");
+    list.innerHTML = "";
+    bench
+      .sort((a, b) => b.adjExp - a.adjExp)
+      .forEach(p => {
+        const row = document.createElement("div");
+        row.className = "list-row";
+        row.innerHTML = `<span class="role-pill ${p.role}">${p.role}</span> ${p.name} <span class="t">${p.adjExp.toFixed(1)} pt.</span>`;
+        list.appendChild(row);
+      });
+    if (!bench.length) list.innerHTML = '<p class="hint">Nessuno in panchina.</p>';
+  }
+
+  function renderRoster() {
+    const roster = rosterOf(currentLeague);
+    const list = document.getElementById("roster-list");
+    list.innerHTML = "";
+    let count = 0;
+    ["P", "D", "C", "A"].forEach(role => {
+      roster[role].forEach(p => {
+        count++;
+        const row = document.createElement("div");
+        row.className = "roster-row";
+        const risk = p.risk;
+        row.innerHTML = `
+          <span class="role-pill ${role}">${role}</span>
+          <span class="rname">${p.name}</span>
+          <span class="rteam">${p.team}</span>
+          <span class="risk-dot risk-${risk}" title="${riskLabel[risk]}"></span>`;
+        list.appendChild(row);
+      });
+    });
+    document.getElementById("rosa-count").textContent = count + " giocatori";
+  }
+
+  document.getElementById("save-formazione").addEventListener("click", () => {
+    const note = document.getElementById("save-note");
+    const state = getState();
+    const missing = [...state.P, ...state.D, ...state.C, ...state.A].filter(n => !n).length;
+    if (missing > 0) {
+      note.textContent = `Non posso salvare: mancano ancora ${missing} maglie.`;
+      note.className = "save-note warn";
+      return;
+    }
+    note.textContent = `Salvata per la Giornata ${currentGiornata} · modulo ${currentModulo}`;
+    note.className = "save-note ok";
+  });
+
+  renderLeagueGrid();
+</script>

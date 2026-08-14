@@ -1,0 +1,158 @@
+/* ============================================================
+   FantaAI — base.css
+   Token di design condivisi (colori, tipografia) e componenti
+   comuni a tutte le pagine: intestazione, pulsanti, footer.
+   ============================================================ */
+
+:root {
+  --paper: #f5f6ef;
+  --paper-raised: #ffffff;
+  --paper-sunk: #eceee3;
+  --ink: #142019;
+  --ink-soft: #47564c;
+  --ink-faint: #8b978c;
+  --line: #dee2d4;
+  --pitch: #1c7a4d;
+  --pitch-deep: #0e4a2c;
+  --pitch-bright: #2fae76;
+  --pitch-tint: #e6f1e9;
+  --gold: #d99a2b;
+  --gold-tint: #fbead0;
+  --risk: #c1503a;
+  --risk-tint: #fbe6e0;
+  --focus: #0e4a2c;
+  --shadow: 0 1px 2px rgba(20, 32, 25, 0.06), 0 8px 24px -14px rgba(20, 32, 25, 0.28);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --paper: #0d130f; --paper-raised: #141c16; --paper-sunk: #0a0f0b;
+    --ink: #ecf1ea; --ink-soft: #a7b3a4; --ink-faint: #647065; --line: #22291f;
+    --pitch: #3fbf82; --pitch-deep: #7fe0ac; --pitch-bright: #3fbf82; --pitch-tint: #14261a;
+    --gold: #e6b856; --gold-tint: #2a2110; --risk: #e2725a; --risk-tint: #2a1712;
+    --focus: #3fbf82; --shadow: 0 1px 2px rgba(0,0,0,0.4), 0 12px 30px -16px rgba(0,0,0,0.6);
+  }
+}
+:root[data-theme="dark"] {
+  --paper: #0d130f; --paper-raised: #141c16; --paper-sunk: #0a0f0b;
+  --ink: #ecf1ea; --ink-soft: #a7b3a4; --ink-faint: #647065; --line: #22291f;
+  --pitch: #3fbf82; --pitch-deep: #7fe0ac; --pitch-bright: #3fbf82; --pitch-tint: #14261a;
+  --gold: #e6b856; --gold-tint: #2a2110; --risk: #e2725a; --risk-tint: #2a1712;
+  --focus: #3fbf82; --shadow: 0 1px 2px rgba(0,0,0,0.4), 0 12px 30px -16px rgba(0,0,0,0.6);
+}
+
+/* colore che si adatta al tema, usato per testi/icone in evidenza */
+.accent-text { color: var(--pitch-deep); }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .accent-text { color: var(--pitch-bright); } }
+:root[data-theme="dark"] .accent-text { color: var(--pitch-bright); }
+
+* { box-sizing: border-box; }
+[hidden] { display: none !important; } /* l'attributo hidden vince sempre, anche su elementi con display forzato via classe */
+html { scroll-behavior: smooth; }
+@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+
+body {
+  margin: 0;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+h1, h2, h3 { text-wrap: balance; margin: 0; }
+p { line-height: 1.6; }
+a { color: inherit; }
+button, input, select { font: inherit; color: inherit; }
+input:focus-visible, select:focus-visible, button:focus-visible, a:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+}
+
+.wrap { max-width: 74rem; margin: 0 auto; padding: 0 1.5rem; }
+
+/* ---------------- intestazione comune ---------------- */
+header.top {
+  position: sticky;
+  top: 0;
+  z-index: 40;
+  background: color-mix(in srgb, var(--paper) 88%, transparent);
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid var(--line);
+}
+.topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.85rem 0;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  font-weight: 800;
+  font-size: 1.05rem;
+  letter-spacing: -0.01em;
+  text-decoration: none;
+  color: inherit;
+}
+.brand .mark {
+  width: 1.8rem;
+  height: 1.8rem;
+  border-radius: 8px;
+  background: var(--pitch-deep);
+  color: var(--pitch-tint);
+  display: grid;
+  place-items: center;
+  font-size: 0.9rem;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .brand .mark { background: var(--pitch-tint); color: var(--pitch-deep); } }
+:root[data-theme="dark"] .brand .mark { background: var(--pitch-tint); color: var(--pitch-deep); }
+
+.crumb { font-size: 0.85rem; color: var(--ink-faint); }
+.crumb b { color: var(--ink); font-weight: 700; }
+
+nav.links { display: flex; gap: 1.6rem; font-size: 0.88rem; font-weight: 600; color: var(--ink-soft); }
+nav.links a { text-decoration: none; }
+nav.links a:hover { color: var(--ink); }
+@media (max-width: 40rem) { nav.links { display: none; } }
+
+/* ---------------- pulsanti comuni ---------------- */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-weight: 700;
+  font-size: 0.9rem;
+  padding: 0.7rem 1.25rem;
+  border-radius: 10px;
+  border: 1px solid var(--line);
+  background: var(--paper-raised);
+  cursor: pointer;
+  text-decoration: none;
+  color: inherit;
+}
+.btn:hover { border-color: var(--pitch-deep); }
+.btn.primary {
+  background: var(--pitch-deep);
+  color: var(--pitch-tint);
+  border-color: var(--pitch-deep);
+}
+.btn.primary:hover { filter: brightness(1.08); }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .btn.primary { background: var(--pitch-bright); color: #06120b; } }
+:root[data-theme="dark"] .btn.primary { background: var(--pitch-bright); color: #06120b; }
+.btn.ghost { background: var(--paper-raised); border-color: var(--line); color: var(--ink); }
+
+/* ---------------- footer comune ---------------- */
+footer.site {
+  border-top: 1px solid var(--line);
+  padding: 2rem 0;
+  margin-top: 2rem;
+  font-size: 0.8rem;
+  color: var(--ink-faint);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.8rem;
+}

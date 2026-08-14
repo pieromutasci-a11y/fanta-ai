@@ -1,0 +1,142 @@
+/* ============================================================
+   FantaAI — home.css
+   Stili specifici della schermata principale (index.html):
+   sezione hero, "come funziona", card delle funzionalità.
+   Richiede base.css per token e componenti comuni.
+   ============================================================ */
+
+/* ---------------- hero ---------------- */
+.hero {
+  position: relative;
+  padding: 4.5rem 0 3.5rem;
+  overflow: hidden;
+}
+.hero-grid {
+  display: grid;
+  grid-template-columns: 1.1fr 0.9fr;
+  gap: 3rem;
+  align-items: center;
+}
+@media (max-width: 55rem) { .hero-grid { grid-template-columns: 1fr; } }
+
+.eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.76rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--pitch-deep);
+  background: var(--pitch-tint);
+  border-radius: 999px;
+  padding: 0.35rem 0.75rem;
+  margin-bottom: 1.1rem;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .eyebrow { color: var(--pitch-bright); } }
+:root[data-theme="dark"] .eyebrow { color: var(--pitch-bright); }
+
+.hero h1 {
+  font-size: clamp(2.1rem, 4.6vw, 3.4rem);
+  line-height: 1.06;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+.hero h1 em {
+  font-style: normal;
+  color: var(--pitch-deep);
+  background: linear-gradient(180deg, transparent 62%, var(--pitch-tint) 62%);
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .hero h1 em { color: var(--pitch-bright); } }
+:root[data-theme="dark"] .hero h1 em { color: var(--pitch-bright); }
+
+.hero p.lede { margin-top: 1.15rem; font-size: 1.1rem; color: var(--ink-soft); max-width: 34rem; }
+.hero-ctas { display: flex; gap: 0.8rem; margin-top: 1.9rem; flex-wrap: wrap; }
+.trust { margin-top: 1.6rem; font-size: 0.82rem; color: var(--ink-faint); }
+
+/* illustrazione campo nell'hero */
+.hero-art {
+  position: relative;
+  aspect-ratio: 4/5;
+  border-radius: 20px;
+  background: repeating-linear-gradient(180deg, var(--pitch-tint) 0 2.6rem, color-mix(in srgb, var(--pitch-tint) 55%, var(--paper)) 2.6rem 5.2rem);
+  border: 1px solid var(--line);
+  box-shadow: var(--shadow);
+  overflow: hidden;
+}
+.hero-art svg { position: absolute; inset: 0; width: 100%; height: 100%; }
+.hero-art .field-line { fill: none; stroke: color-mix(in srgb, var(--pitch-deep) 35%, transparent); stroke-width: 1.4; }
+.hero-art .pin { fill: var(--pitch-deep); }
+.hero-art .pin.cap { fill: var(--gold); }
+.hero-art text.pin-label { font-size: 6.5px; font-weight: 700; fill: var(--paper-raised); text-anchor: middle; }
+.hero-art .glow { animation: pulse 2.6s ease-in-out infinite; transform-origin: center; }
+@media (prefers-reduced-motion: reduce) { .hero-art .glow { animation: none; } }
+@keyframes pulse {
+  0%, 100% { r: 9px; opacity: 0.55; }
+  50% { r: 13px; opacity: 0.15; }
+}
+.hero-art .card-float {
+  position: absolute; left: 0.9rem; bottom: 0.9rem;
+  background: var(--paper-raised); border: 1px solid var(--line); border-radius: 12px;
+  padding: 0.65rem 0.85rem; box-shadow: var(--shadow);
+  font-size: 0.78rem; display: flex; align-items: center; gap: 0.5rem;
+}
+.hero-art .card-float .dot { width: 0.5rem; height: 0.5rem; border-radius: 50%; background: var(--gold); flex: none; }
+
+/* ---------------- come funziona ---------------- */
+.steps { padding: 3.5rem 0; border-top: 1px solid var(--line); }
+.steps h2 { font-size: 1.5rem; letter-spacing: -0.01em; }
+.steps .sub { color: var(--ink-soft); margin-top: 0.4rem; max-width: 32rem; }
+.step-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem; margin-top: 2.2rem; }
+@media (max-width: 50rem) { .step-row { grid-template-columns: 1fr; } }
+.step .num {
+  font-size: 0.78rem; font-weight: 800; color: var(--pitch-deep);
+  border: 1px solid var(--pitch-deep); border-radius: 999px;
+  width: 1.9rem; height: 1.9rem; display: grid; place-items: center; margin-bottom: 0.9rem;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .step .num { color: var(--pitch-bright); border-color: var(--pitch-bright); } }
+:root[data-theme="dark"] .step .num { color: var(--pitch-bright); border-color: var(--pitch-bright); }
+.step h3 { font-size: 1.02rem; margin-bottom: 0.4rem; }
+.step p { font-size: 0.9rem; color: var(--ink-soft); }
+
+/* ---------------- funzionalità ---------------- */
+.features { padding: 3.5rem 0 4.5rem; }
+.features-head { display: flex; align-items: flex-end; justify-content: space-between; gap: 1rem; flex-wrap: wrap; }
+.features h2 { font-size: 1.5rem; letter-spacing: -0.01em; }
+.features .sub { color: var(--ink-soft); margin-top: 0.4rem; max-width: 30rem; }
+
+.card-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.25rem; margin-top: 2.2rem; }
+@media (max-width: 60rem) { .card-grid { grid-template-columns: 1fr 1fr; } }
+@media (max-width: 40rem) { .card-grid { grid-template-columns: 1fr; } }
+
+.feat-card {
+  display: flex; flex-direction: column; gap: 0.9rem;
+  background: var(--paper-raised); border: 1px solid var(--line); border-radius: 16px;
+  padding: 1.5rem; text-decoration: none; color: inherit;
+  transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
+}
+@media (prefers-reduced-motion: reduce) { .feat-card { transition: none; } }
+.feat-card:hover { transform: translateY(-3px); box-shadow: var(--shadow); border-color: var(--pitch-deep); }
+.feat-card.highlight { background: linear-gradient(160deg, var(--pitch-tint), var(--paper-raised) 55%); border-color: color-mix(in srgb, var(--pitch-deep) 25%, var(--line)); }
+
+.feat-icon {
+  width: 2.6rem; height: 2.6rem; border-radius: 10px;
+  background: var(--pitch-deep); color: var(--pitch-tint);
+  display: grid; place-items: center; font-size: 1.2rem;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .feat-icon { background: var(--pitch-tint); color: var(--pitch-deep); } }
+:root[data-theme="dark"] .feat-icon { background: var(--pitch-tint); color: var(--pitch-deep); }
+
+.feat-card h3 { font-size: 1.08rem; letter-spacing: -0.005em; }
+.feat-card p.desc { font-size: 0.87rem; color: var(--ink-soft); flex: 1; }
+.feat-card .go { font-size: 0.82rem; font-weight: 700; color: var(--pitch-deep); display: inline-flex; align-items: center; gap: 0.3rem; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .feat-card .go { color: var(--pitch-bright); } }
+:root[data-theme="dark"] .feat-card .go { color: var(--pitch-bright); }
+.feat-card .go svg { width: 0.85rem; height: 0.85rem; transition: transform 0.18s ease; }
+.feat-card:hover .go svg { transform: translateX(3px); }
+
+.tag-row { display: flex; gap: 0.4rem; flex-wrap: wrap; }
+.mini-tag {
+  font-size: 0.7rem; font-weight: 700; color: var(--gold);
+  background: var(--gold-tint); border-radius: 999px; padding: 0.15rem 0.55rem;
+}

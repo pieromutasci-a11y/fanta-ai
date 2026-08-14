@@ -1,0 +1,811 @@
+<title>FantaAI — Guida all'asta</title>
+<link rel="stylesheet" href="css/base.css">
+<link rel="stylesheet" href="css/asta.css">
+
+<header class="top">
+  <div class="wrap topbar">
+    <a class="brand" href="index.html"><span class="mark">⚽</span> FantaAI</a>
+    <span class="crumb">Guida intelligente all'<b>asta</b></span>
+    <div class="stepper" role="tablist" aria-label="Fasi dell'asta">
+      <button role="tab" aria-selected="true" data-target="setup"><span class="n">1</span> Imposta l'asta</button>
+      <button role="tab" aria-selected="false" data-target="live"><span class="n">2</span> Asta in corso</button>
+    </div>
+  </div>
+</header>
+
+<main class="stage">
+  <!-- ============ VIEW 1: SETUP ============ -->
+  <section id="setup" class="view active wrap">
+    <div class="page-head">
+      <h1>Imposta la tua asta</h1>
+      <p>Configura regole, avversari e composizione delle rose una volta sola: FantaAI userà questi parametri per calcolare i valori consigliati durante l'asta.</p>
+    </div>
+
+    <div class="setup-grid">
+
+      <div class="card">
+        <h2><span class="card-icon">💰</span> Crediti a disposizione</h2>
+        <p class="card-sub">Il budget totale che ogni squadra ha per fare l'asta.</p>
+        <div class="field">
+          <label for="credits">Crediti per squadra</label>
+          <div class="credit-input">
+            <input type="number" id="credits" value="500" min="1">
+            <span class="unit">crediti</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2><span class="card-icon">🧾</span> Modalità</h2>
+        <p class="card-sub">Cambia i ruoli utilizzabili e i punteggi di riferimento.</p>
+        <div class="mode-cards">
+          <div class="mode-card active">
+            <div class="t">Classic</div>
+            <div class="d">Portiere, Difensore, Centrocampista, Attaccante</div>
+          </div>
+          <div class="mode-card">
+            <div class="t">Mantra</div>
+            <div class="d">Ruoli multipli per giocatore, moduli avanzati</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2><span class="card-icon">👥</span> Composizione rosa</h2>
+        <p class="card-sub">Quanti giocatori per ruolo dovrà avere ogni squadra.</p>
+        <div class="role-rows">
+          <div class="role-row">
+            <div class="name"><span class="swatch">P</span> Portieri</div>
+            <div class="stepper-mini"><button type="button" data-step="-1" data-role="p">−</button><span class="count" id="count-p">3</span><button type="button" data-step="1" data-role="p">+</button></div>
+          </div>
+          <div class="role-row">
+            <div class="name"><span class="swatch">D</span> Difensori</div>
+            <div class="stepper-mini"><button type="button" data-step="-1" data-role="d">−</button><span class="count" id="count-d">8</span><button type="button" data-step="1" data-role="d">+</button></div>
+          </div>
+          <div class="role-row">
+            <div class="name"><span class="swatch">C</span> Centrocampisti</div>
+            <div class="stepper-mini"><button type="button" data-step="-1" data-role="c">−</button><span class="count" id="count-c">8</span><button type="button" data-step="1" data-role="c">+</button></div>
+          </div>
+          <div class="role-row">
+            <div class="name"><span class="swatch">A</span> Attaccanti</div>
+            <div class="stepper-mini"><button type="button" data-step="-1" data-role="a">−</button><span class="count" id="count-a">6</span><button type="button" data-step="1" data-role="a">+</button></div>
+          </div>
+        </div>
+        <div class="role-total">Totale rosa: <b id="role-total">25</b> giocatori</div>
+      </div>
+
+      <div class="card">
+        <h2><span class="card-icon">🏆</span> Avversari</h2>
+        <p class="card-sub">Aggiungi le squadre della tua lega — FantaAI seguirà i loro acquisti in tempo reale.</p>
+        <div class="opponent-list" id="opponent-list">
+          <div class="opponent-row"><span class="avatar">TU</span><input type="text" value="La mia squadra" disabled></div>
+        </div>
+        <button class="add-link" type="button" id="add-opponent">+ Aggiungi avversario</button>
+      </div>
+
+      <div class="card full">
+        <h2><span class="card-icon">🛒</span> Tipo di mercato</h2>
+        <p class="card-sub">Come si svolge l'asta principale, più le eventuali finestre di mercato aggiuntive durante la stagione.</p>
+
+        <div class="chip-group" id="market-type-picker">
+          <button class="chip active" type="button">Asta classica</button>
+          <button class="chip" type="button">Asta smart</button>
+          <button class="chip" type="button">A buste chiuse</button>
+          <button class="chip" type="button">A quotazione</button>
+          <button class="chip" type="button">A gettone</button>
+        </div>
+
+        <div class="role-rows" style="margin-top:1.1rem;">
+          <div class="role-row">
+            <div class="name">Mercato di riparazione a metà stagione</div>
+            <label class="switch"><input type="checkbox" checked><span class="track"></span><span class="thumb"></span></label>
+          </div>
+          <div class="role-row">
+            <div class="name">Mercato scambi tra manager</div>
+            <label class="switch"><input type="checkbox" checked><span class="track"></span><span class="thumb"></span></label>
+          </div>
+          <div class="role-row">
+            <div class="name">Svincoli al buio</div>
+            <label class="switch"><input type="checkbox"><span class="track"></span><span class="thumb"></span></label>
+          </div>
+          <div class="role-row">
+            <div class="name">Prestiti tra squadre</div>
+            <label class="switch"><input type="checkbox"><span class="track"></span><span class="thumb"></span></label>
+          </div>
+        </div>
+      </div>
+
+      <div class="card full">
+        <h2><span class="card-icon">⚡</span> Bonus e malus</h2>
+        <p class="card-sub">Attiva le voci di punteggio della tua lega e imposta il valore assegnato a ciascuna.</p>
+        <table class="bonus-table">
+          <thead><tr><th>Voce</th><th></th><th class="val">Punti</th></tr></thead>
+          <tbody>
+            <tr><td>Gol fatto</td><td><label class="switch"><input type="checkbox" checked><span class="track"></span><span class="thumb"></span></label></td><td class="val"><input type="number" value="3" step="0.5"></td></tr>
+            <tr><td>Assist</td><td><label class="switch"><input type="checkbox" checked><span class="track"></span><span class="thumb"></span></label></td><td class="val"><input type="number" value="1" step="0.5"></td></tr>
+            <tr><td>Rigore parato</td><td><label class="switch"><input type="checkbox" checked><span class="track"></span><span class="thumb"></span></label></td><td class="val"><input type="number" value="3" step="0.5"></td></tr>
+            <tr><td>Rigore sbagliato</td><td><label class="switch"><input type="checkbox" checked><span class="track"></span><span class="thumb"></span></label></td><td class="val"><input type="number" value="-3" step="0.5"></td></tr>
+            <tr><td>Autogol</td><td><label class="switch"><input type="checkbox" checked><span class="track"></span><span class="thumb"></span></label></td><td class="val"><input type="number" value="-2" step="0.5"></td></tr>
+            <tr><td>Ammonizione</td><td><label class="switch"><input type="checkbox" checked><span class="track"></span><span class="thumb"></span></label></td><td class="val"><input type="number" value="-0.5" step="0.5"></td></tr>
+            <tr><td>Espulsione</td><td><label class="switch"><input type="checkbox" checked><span class="track"></span><span class="thumb"></span></label></td><td class="val"><input type="number" value="-1" step="0.5"></td></tr>
+            <tr><td>Portiere imbattuto</td><td><label class="switch"><input type="checkbox"><span class="track"></span><span class="thumb"></span></label></td><td class="val"><input type="number" value="1" step="0.5"></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="card full">
+        <h2><span class="card-icon">👕</span> Rosa e sostituzioni</h2>
+        <p class="card-sub">Vincoli sulla composizione della rosa e regole per cambiare la formazione dopo averla salvata.</p>
+
+        <div class="rs-grid">
+          <div class="modifier-block" data-enabled="true">
+            <div class="role-row">
+              <div class="name">Tetto giocatori per squadra reale</div>
+              <label class="switch"><input type="checkbox" class="mod-toggle" checked><span class="track"></span><span class="thumb"></span></label>
+            </div>
+            <div class="modifier-detail">
+              <div class="field">
+                <label>Massimo giocatori dalla stessa squadra di Serie A</label>
+                <div class="credit-input"><input type="number" value="3" min="2" max="5"><span class="unit">giocatori</span></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="modifier-block" data-enabled="true">
+            <div class="role-row">
+              <div class="name">Timeout modifica formazione</div>
+              <label class="switch"><input type="checkbox" class="mod-toggle" checked><span class="track"></span><span class="thumb"></span></label>
+            </div>
+            <div class="modifier-detail">
+              <div class="field">
+                <label>Chiudi le formazioni</label>
+                <div class="credit-input"><input type="number" value="15" min="0" max="60"><span class="unit">minuti prima della 1ª partita</span></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="modifier-block full-span" data-enabled="true">
+            <div class="role-row">
+              <div class="name">Sostituzioni durante la giornata</div>
+              <label class="switch"><input type="checkbox" class="mod-toggle" checked><span class="track"></span><span class="thumb"></span></label>
+            </div>
+            <div class="modifier-detail">
+              <div class="field" style="max-width:16rem;">
+                <label>Numero di sostituzioni ammesse</label>
+                <div class="credit-input"><input type="number" value="5" min="1" max="10"><span class="unit">o illimitate</span></div>
+              </div>
+              <div class="mode-cards cols-3">
+                <div class="mode-card active">
+                  <div class="t">Dinamica</div>
+                  <div class="d">Panchina libera, con cambio modulo se serve</div>
+                </div>
+                <div class="mode-card">
+                  <div class="t">Ibrida</div>
+                  <div class="d">Prima stesso ruolo, poi cambio modulo</div>
+                </div>
+                <div class="mode-card">
+                  <div class="t">Tradizionale</div>
+                  <div class="d">Solo tra giocatori dello stesso ruolo</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card full">
+        <h2><span class="card-icon">🛡️</span> Modificatori</h2>
+        <p class="card-sub">Bonus e malus di reparto, calcolati sui voti base (senza bonus/malus) dei titolari. Attiva solo quelli usati nella tua lega.</p>
+
+        <div class="modifier-block" data-enabled="true">
+          <div class="role-row">
+            <div class="name">Modificatore portiere</div>
+            <label class="switch"><input type="checkbox" class="mod-toggle" checked><span class="track"></span><span class="thumb"></span></label>
+          </div>
+          <div class="modifier-detail">
+            <p class="hint">Si attiva quando il portiere prende un voto. Assegna un bonus alla sua squadra o un malus a quella avversaria.</p>
+            <div class="mini-fields">
+              <div class="field"><label>Bonus alla squadra del portiere</label><input type="number" value="1" step="0.5"></div>
+              <div class="field"><label>Malus alla squadra avversaria</label><input type="number" value="0" step="0.5"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="modifier-block" data-enabled="true">
+          <div class="role-row">
+            <div class="name">Modificatore difesa</div>
+            <label class="switch"><input type="checkbox" class="mod-toggle" checked><span class="track"></span><span class="thumb"></span></label>
+          </div>
+          <div class="modifier-detail">
+            <div class="field" style="max-width:22rem;">
+              <label>Si attiva schierando almeno</label>
+              <div class="credit-input"><input type="number" value="4" min="3" max="5"><span class="unit">difensori in campo</span></div>
+              <span class="hint">Media calcolata sui 3 migliori difensori + portiere</span>
+            </div>
+            <table class="bonus-table" style="margin-top:0.6rem;">
+              <thead><tr><th>Media voti base difesa</th><th class="val">Modificatore</th></tr></thead>
+              <tbody>
+                <tr><td>Meno di 5,5</td><td class="val">−1</td></tr>
+                <tr><td>5,5 – 5,99</td><td class="val">0</td></tr>
+                <tr><td>6 – 6,49</td><td class="val">+1</td></tr>
+                <tr><td>6,5 – 6,99</td><td class="val">+2</td></tr>
+                <tr><td>7 – 7,49</td><td class="val">+3</td></tr>
+                <tr><td>7,5 e oltre</td><td class="val">+4</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="modifier-block" data-enabled="true">
+          <div class="role-row">
+            <div class="name">Modificatore centrocampo</div>
+            <label class="switch"><input type="checkbox" class="mod-toggle" checked><span class="track"></span><span class="thumb"></span></label>
+          </div>
+          <div class="modifier-detail">
+            <p class="hint">Confronta il totale dei voti base dei centrocampisti delle due squadre. Chi ne schiera meno di modulo riceve un voto 5 per ogni centrocampista mancante, per pareggiare il conto.</p>
+            <div class="field" style="max-width:16rem;">
+              <label>Punti assegnati per ogni voto di scarto</label>
+              <input type="number" value="1" step="0.5">
+            </div>
+          </div>
+        </div>
+
+        <div class="modifier-block" data-enabled="false">
+          <div class="role-row">
+            <div class="name">Modificatore attacco</div>
+            <label class="switch"><input type="checkbox" class="mod-toggle"><span class="track"></span><span class="thumb"></span></label>
+          </div>
+          <div class="modifier-detail">
+            <p class="hint">Riguarda solo gli attaccanti con voto base ≥ 6 che non segnano, non fanno assist e non sbagliano rigori: ognuno di loro riceve il malus indicato.</p>
+            <div class="field" style="max-width:16rem;">
+              <label>Malus per attaccante "spento"</label>
+              <input type="number" value="-1" step="0.5">
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card full">
+        <h2><span class="card-icon">🧩</span> Moduli disponibili</h2>
+        <p class="card-sub">Seleziona i moduli che potrai schierare durante la stagione — influenzano i valori consigliati per ruolo.</p>
+        <div class="chip-group">
+          <button class="chip active" type="button">3-4-3</button>
+          <button class="chip active" type="button">3-5-2</button>
+          <button class="chip active" type="button">4-3-3</button>
+          <button class="chip active" type="button">4-4-2</button>
+          <button class="chip" type="button">4-5-1</button>
+          <button class="chip" type="button">5-3-2</button>
+          <button class="chip" type="button">5-4-1</button>
+        </div>
+      </div>
+
+      <div class="card full">
+        <h2><span class="card-icon">📄</span> Importa il listone</h2>
+        <p class="card-sub">Carica il file ufficiale (Fantacalcio.it, Fantagazzetta e simili): FantaAI lo legge automaticamente e lo usa come base per quotazioni e ruoli.</p>
+
+        <div class="dropzone" id="dropzone">
+          <div class="dz-icon">📥</div>
+          <div class="dz-title">Trascina qui il file del listone</div>
+          <div class="dz-sub">Formato .xlsx, .xls o .csv — oppure scegli un file dal computer</div>
+          <button class="btn btn-browse" type="button" id="browse-btn">Sfoglia file</button>
+          <input type="file" id="listone-file" accept=".xlsx,.xls,.csv" hidden>
+        </div>
+
+        <div class="import-status" id="import-status" hidden></div>
+
+        <details class="format-help">
+          <summary>Quali colonne riconosce FantaAI?</summary>
+          <p class="hint">Sono le colonne standard dei listoni ufficiali — basta che il file le contenga (in qualsiasi ordine, maiuscole/minuscole non contano):</p>
+          <table class="bonus-table">
+            <thead><tr><th>Colonna</th><th>Significato</th></tr></thead>
+            <tbody>
+              <tr><td>Id</td><td>Identificativo del giocatore</td></tr>
+              <tr><td>R</td><td>Ruolo Classic (P, D, C, A) — obbligatoria</td></tr>
+              <tr><td>RM</td><td>Ruolo/i Mantra (es. Dc, W, Pc)</td></tr>
+              <tr><td>Nome</td><td>Nome del giocatore — obbligatoria</td></tr>
+              <tr><td>Squadra</td><td>Squadra di Serie A — obbligatoria</td></tr>
+              <tr><td>Qt.A / Qt.I / Diff.</td><td>Quotazione attuale, iniziale e differenza (Classic)</td></tr>
+              <tr><td>Qt.A M / Qt.I M / Diff.M</td><td>Le stesse quotazioni in modalità Mantra</td></tr>
+              <tr><td>FVM / FVM M</td><td>FantaValore di Mercato — punto di partenza per il valore consigliato dall'AI</td></tr>
+            </tbody>
+          </table>
+        </details>
+      </div>
+
+    </div>
+
+    <div class="setup-footer">
+      <button class="btn primary" type="button" id="go-live">Inizia l'asta →</button>
+    </div>
+  </section>
+
+  <!-- ============ VIEW 2: LIVE ============ -->
+  <section id="live" class="view wrap">
+    <div class="page-head">
+      <h1>Asta in corso</h1>
+      <p>Assegna ogni giocatore battuto alla squadra che se lo aggiudica: i valori consigliati si aggiornano da soli in base a chi resta ancora libero.</p>
+    </div>
+
+    <div class="stat-strip">
+      <div class="stat"><div class="label">Crediti spesi (tu)</div><div class="value" id="stat-spent">213<span style="font-size:0.9rem;color:var(--ink-faint);"> / 500</span></div></div>
+      <div class="stat"><div class="label">Giocatori assegnati</div><div class="value" id="stat-assigned">312 <span style="font-size:0.9rem;color:var(--ink-faint);">/ 550</span></div></div>
+      <div class="stat"><div class="label">Ancora liberi</div><div class="value accent" id="stat-free">238</div></div>
+      <div class="stat"><div class="label">Prossimo obiettivo AI</div><div class="value accent" style="font-size:1.05rem;" id="stat-target">Barella</div></div>
+    </div>
+
+    <div class="live-grid">
+      <div>
+        <div class="toolbar">
+          <input type="search" placeholder="Cerca giocatore…" id="search-player">
+          <select id="team-filter"><option value="ALL">Tutte le squadre</option></select>
+          <div class="rating-filter">
+            <input type="number" id="rating-min" placeholder="Val. min">
+            <span>–</span>
+            <input type="number" id="rating-max" placeholder="Val. max">
+          </div>
+          <select id="sort-select">
+            <option value="ai-desc">Valore AI ↓</option>
+            <option value="ai-asc">Valore AI ↑</option>
+            <option value="name-asc">Nome A-Z</option>
+          </select>
+        </div>
+        <div class="toolbar">
+          <div class="role-filter" id="role-filter">
+            <button class="active" data-role="ALL" type="button">Tutti</button>
+            <button data-role="P" type="button">P</button>
+            <button data-role="D" type="button">D</button>
+            <button data-role="C" type="button">C</button>
+            <button data-role="A" type="button">A</button>
+          </div>
+          <span class="results-count" id="results-count"></span>
+        </div>
+
+        <div class="listone">
+          <table class="listone-table">
+            <thead>
+              <tr><th>Ruolo</th><th>Giocatore</th><th>Valore AI</th><th>Assegnazione</th></tr>
+            </thead>
+            <tbody id="listone-body"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="side-col">
+        <div class="insight-card">
+          <div class="k">Aggiornamento AI</div>
+          <p>Con 238 giocatori ancora liberi, il valore consigliato per i centrocampisti offensivi è salito del 9% — considera di anticipare Barella prima che salga ancora.</p>
+        </div>
+
+        <div class="panel-card">
+          <div class="panel-card-head">
+            <h3>Rose in tempo reale</h3>
+            <span class="hint">Si aggiornano a ogni assegnazione</span>
+          </div>
+          <div id="teams-panel"><!-- generato da script --></div>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer class="site wrap">Mockup della guida all'asta — dati d'esempio, nessun calcolo reale.</footer>
+
+<script src="js/xlsx.mini.min.js"></script>
+<script>
+  // ---------------- salvataggio nel browser: asta e avversari restano dopo il refresh ----------------
+  const ASTA_STORAGE_KEY = 'fantaai-asta';
+  function loadAstaSaved() {
+    try {
+      const raw = localStorage.getItem(ASTA_STORAGE_KEY);
+      return raw ? JSON.parse(raw) : null;
+    } catch { return null; }
+  }
+  function persistAsta() {
+    try {
+      const opponents = [...document.querySelectorAll('#opponent-list input')].map(i => i.value.trim()).filter(Boolean);
+      const players = rows().map(r => ({
+        role: r.dataset.role, team: r.dataset.team, airating: r.dataset.airating,
+        name: r.querySelector('.pname').textContent, status: r.dataset.status,
+        assignedTeam: r.dataset.assignedTeam || null, price: r.dataset.price || null,
+      }));
+      localStorage.setItem(ASTA_STORAGE_KEY, JSON.stringify({
+        credits: document.getElementById('credits').value,
+        opponents, players,
+      }));
+    } catch { /* storage non disponibile: si continua solo in memoria */ }
+  }
+  const astaSaved = loadAstaSaved();
+
+  // stepper tra le due fasi
+  document.querySelectorAll('.stepper button').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.stepper button').forEach(b => b.setAttribute('aria-selected', 'false'));
+      btn.setAttribute('aria-selected', 'true');
+      document.querySelectorAll('#setup.view, #live.view').forEach(v => v.classList.remove('active'));
+      document.getElementById(btn.dataset.target).classList.add('active');
+    });
+  });
+  document.getElementById('go-live').addEventListener('click', () => {
+    document.querySelector('[data-target="live"]').click();
+  });
+
+  // stepper composizione rosa
+  const counts = { p: 3, d: 8, c: 8, a: 6 };
+  document.querySelectorAll('.stepper-mini button').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const role = btn.dataset.role;
+      counts[role] = Math.max(0, counts[role] + parseInt(btn.dataset.step, 10));
+      document.getElementById('count-' + role).textContent = counts[role];
+      document.getElementById('role-total').textContent = Object.values(counts).reduce((a, b) => a + b, 0);
+    });
+  });
+
+  // rimuovi avversario — e aggiorna subito chi è selezionabile durante l'asta
+  document.getElementById('opponent-list').addEventListener('click', (e) => {
+    if (!e.target.classList.contains('rm')) return;
+    e.target.closest('.opponent-row').remove();
+    onOpponentsChanged();
+  });
+  let oppN = 0;
+  function addOpponentRow(name, focus) {
+    oppN++;
+    const row = document.createElement('div');
+    row.className = 'opponent-row';
+    row.innerHTML = '<span class="avatar">+' + oppN + '</span><input type="text" placeholder="Nome avversario" value="' + (name || '') + '"><button class="rm" type="button" aria-label="Rimuovi">✕</button>';
+    document.getElementById('opponent-list').appendChild(row);
+    if (focus) row.querySelector('input').focus();
+    row.querySelector('input').addEventListener('input', onOpponentsChanged);
+    return row;
+  }
+  document.getElementById('add-opponent').addEventListener('click', () => addOpponentRow('', true));
+  function onOpponentsChanged() {
+    syncTeamNames();
+    persistAsta();
+    refreshAssignSelects();
+    refreshTeamRosters();
+  }
+
+  // ripristina avversari, crediti e listone salvati nel browser
+  if (astaSaved) {
+    if (astaSaved.credits) document.getElementById('credits').value = astaSaved.credits;
+    (astaSaved.opponents || []).forEach(name => { if (name !== 'La mia squadra') addOpponentRow(name, false); });
+  }
+
+  // chip moduli (multi-selezione)
+  document.querySelectorAll('#setup .chip-group:not(#market-type-picker) .chip').forEach(c => c.addEventListener('click', () => c.classList.toggle('active')));
+
+  // chip tipo di mercato (selezione singola)
+  document.getElementById('market-type-picker').addEventListener('click', (e) => {
+    const c = e.target.closest('.chip'); if (!c) return;
+    document.querySelectorAll('#market-type-picker .chip').forEach(x => x.classList.remove('active'));
+    c.classList.add('active');
+  });
+
+  // mode-card: singola selezione all'interno dello stesso gruppo
+  document.querySelectorAll('.mode-cards').forEach(group => {
+    group.addEventListener('click', (e) => {
+      const c = e.target.closest('.mode-card'); if (!c) return;
+      group.querySelectorAll('.mode-card').forEach(x => x.classList.remove('active'));
+      c.classList.add('active');
+    });
+  });
+
+  // attiva/disattiva i blocchi dei modificatori
+  document.querySelectorAll('.mod-toggle').forEach(t => {
+    t.addEventListener('change', () => {
+      t.closest('.modifier-block').dataset.enabled = t.checked;
+    });
+  });
+
+  // ---------------- listone: filtri, ordinamento, rose live ----------------
+  const TEAM_BUDGET = 500;
+  // le squadre selezionabili nascono dagli avversari inseriti nella card "Avversari" del setup
+  let TEAM_NAMES = [];
+  function syncTeamNames() {
+    TEAM_NAMES = [...document.querySelectorAll('#opponent-list input')].map(i => i.value.trim()).filter(Boolean);
+  }
+  function refreshAssignSelects() {
+    rows().filter(r => r.dataset.status !== 'assegnato').forEach(r => {
+      const select = r.querySelector('select');
+      if (!select) return;
+      const current = select.value;
+      select.innerHTML = buildAssignSelect().match(/<select>(.*)<\/select>/)[1];
+      if ([...select.options].some(o => o.value === current)) select.value = current;
+    });
+  }
+  syncTeamNames();
+
+  const listoneBody = document.getElementById('listone-body');
+  const rows = () => Array.from(listoneBody.querySelectorAll('tr'));
+
+  // popola il filtro squadra con le squadre reali presenti nel listone
+  const teamFilter = document.getElementById('team-filter');
+  const realTeams = [...new Set(rows().map(r => r.dataset.team))].sort();
+  realTeams.forEach(t => {
+    const opt = document.createElement('option');
+    opt.value = t; opt.textContent = t;
+    teamFilter.appendChild(opt);
+  });
+
+  let activeRole = 'ALL';
+  document.getElementById('role-filter').addEventListener('click', (e) => {
+    const b = e.target.closest('button'); if (!b) return;
+    document.querySelectorAll('#role-filter button').forEach(x => x.classList.remove('active'));
+    b.classList.add('active');
+    activeRole = b.dataset.role;
+    applyFilters();
+  });
+  document.getElementById('search-player').addEventListener('input', applyFilters);
+  teamFilter.addEventListener('change', applyFilters);
+  document.getElementById('rating-min').addEventListener('input', applyFilters);
+  document.getElementById('rating-max').addEventListener('input', applyFilters);
+  document.getElementById('sort-select').addEventListener('change', applyFilters);
+
+  function applyFilters() {
+    const q = document.getElementById('search-player').value.trim().toLowerCase();
+    const team = teamFilter.value;
+    const min = parseFloat(document.getElementById('rating-min').value);
+    const max = parseFloat(document.getElementById('rating-max').value);
+    const sort = document.getElementById('sort-select').value;
+
+    let visible = 0;
+    rows().forEach(r => {
+      const rating = parseFloat(r.dataset.airating);
+      const matchesRole = activeRole === 'ALL' || r.dataset.role === activeRole;
+      const matchesTeam = team === 'ALL' || r.dataset.team === team;
+      const matchesQuery = !q || r.querySelector('.pname').textContent.toLowerCase().includes(q);
+      const matchesMin = isNaN(min) || rating >= min;
+      const matchesMax = isNaN(max) || rating <= max;
+      const show = matchesRole && matchesTeam && matchesQuery && matchesMin && matchesMax;
+      r.style.display = show ? '' : 'none';
+      if (show) visible++;
+    });
+
+    const sorted = rows().sort((a, b) => {
+      if (sort === 'name-asc') return a.querySelector('.pname').textContent.localeCompare(b.querySelector('.pname').textContent);
+      const av = parseFloat(a.dataset.airating), bv = parseFloat(b.dataset.airating);
+      return sort === 'ai-asc' ? av - bv : bv - av;
+    });
+    sorted.forEach(r => listoneBody.appendChild(r));
+
+    document.getElementById('results-count').textContent = visible + ' giocatori trovati';
+  }
+
+  // rose delle squadre calcolate in tempo reale dai giocatori assegnati
+  const teamsPanel = document.getElementById('teams-panel');
+  function refreshTeamRosters() {
+    const assigned = rows().filter(r => r.dataset.status === 'assegnato');
+    teamsPanel.innerHTML = '';
+    TEAM_NAMES.forEach(team => {
+      const mine = assigned.filter(r => r.dataset.assignedTeam === team);
+      const spent = mine.reduce((s, r) => s + (parseInt(r.dataset.price, 10) || 0), 0);
+      const remaining = TEAM_BUDGET - spent;
+      const counts = { P: 0, D: 0, C: 0, A: 0 };
+      mine.forEach(r => counts[r.dataset.role]++);
+
+      const block = document.createElement('div');
+      block.className = 'team-card';
+      block.innerHTML = `
+        <div class="t-head">
+          <span class="t-name${team === 'La mia squadra' ? ' you' : ''}">${team}</span>
+          <span class="t-budget">${remaining} / ${TEAM_BUDGET}</span>
+        </div>
+        <div class="bar"><span style="width:${(spent / TEAM_BUDGET * 100).toFixed(1)}%"></span></div>
+        <div class="role-mini"><span><b>${counts.P}</b> P</span><span><b>${counts.D}</b> D</span><span><b>${counts.C}</b> C</span><span><b>${counts.A}</b> A</span></div>
+        <button class="roster-toggle" type="button" aria-expanded="false">Rosa (${mine.length}) <svg viewBox="0 0 16 16" fill="none"><path d="M4 6l4 4 4-4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+        <div class="team-roster-list" hidden>
+          ${mine.length ? mine.map(r => `<div class="list-row"><span class="role-pill ${r.dataset.role}">${r.dataset.role}</span> ${r.querySelector('.pname').textContent} <span class="t">${r.dataset.price} cr.</span> <button type="button" class="rm-from-team" data-player="${r.querySelector('.pname').textContent}" title="Rimuovi dalla rosa">✕</button></div>`).join('') : '<p class="hint">Nessun giocatore ancora acquistato.</p>'}
+        </div>`;
+
+      const toggle = block.querySelector('.roster-toggle');
+      const list = block.querySelector('.team-roster-list');
+      toggle.addEventListener('click', () => {
+        const open = list.hidden;
+        list.hidden = !open;
+        toggle.setAttribute('aria-expanded', String(open));
+        toggle.classList.toggle('open', open);
+      });
+
+      teamsPanel.appendChild(block);
+    });
+  }
+
+  // rimuovi un giocatore direttamente dal pannello "rose in tempo reale"
+  teamsPanel.addEventListener('click', (e) => {
+    const btn = e.target.closest('.rm-from-team'); if (!btn) return;
+    const row = rows().find(r => r.dataset.status === 'assegnato' && r.querySelector('.pname').textContent === btn.dataset.player);
+    if (!row) return;
+    row.dataset.status = 'libero';
+    delete row.dataset.assignedTeam;
+    delete row.dataset.price;
+    row.querySelector('td:last-child').innerHTML = assignCellHTML();
+    refreshTeamRosters();
+    refreshStats();
+    applyFilters();
+    persistAsta();
+  });
+
+  // markup della cella "assegnazione": form di assegnazione se libero, riepilogo + annulla se preso
+  function assignCellHTML() {
+    return '<div class="assign-inline">' + buildAssignSelect() +
+      '<input type="number" placeholder="Cred."><button type="button" class="assign-btn">✓</button></div>';
+  }
+  function assignedCellHTML(team, price) {
+    return 'Preso da <b>' + team + '</b> per <span class="price">' + price + ' cr.</span>' +
+      ' <button type="button" class="undo-assign" title="Annulla assegnazione">↺ Annulla</button>';
+  }
+
+  // normalizza le righe già segnate come "assegnato" nell'HTML statico, cosi' hanno anche loro il tasto annulla
+  rows().filter(r => r.dataset.status === 'assegnato').forEach(r => {
+    r.querySelector('td:last-child').innerHTML = assignedCellHTML(r.dataset.assignedTeam, r.dataset.price);
+  });
+
+  // assegnazione e annullamento giocatore
+  listoneBody.addEventListener('click', (e) => {
+    if (e.target.classList.contains('assign-btn')) {
+      const row = e.target.closest('tr');
+      const select = row.querySelector('select');
+      const price = row.querySelector('input[type="number"]');
+      const team = select.value;
+      if (team === 'Assegna a…' || !price.value) { price.focus(); return; }
+      row.dataset.status = 'assegnato';
+      row.dataset.assignedTeam = team;
+      row.dataset.price = price.value;
+      row.querySelector('td:last-child').innerHTML = assignedCellHTML(team, price.value);
+      refreshTeamRosters();
+      refreshStats();
+      persistAsta();
+      return;
+    }
+    if (e.target.classList.contains('undo-assign')) {
+      const row = e.target.closest('tr');
+      row.dataset.status = 'libero';
+      delete row.dataset.assignedTeam;
+      delete row.dataset.price;
+      row.querySelector('td:last-child').innerHTML = assignCellHTML();
+      refreshTeamRosters();
+      refreshStats();
+      applyFilters();
+      persistAsta();
+      return;
+    }
+  });
+
+  function refreshStats() {
+    const all = rows();
+    const assigned = all.filter(r => r.dataset.status === 'assegnato');
+    const mine = assigned.filter(r => r.dataset.assignedTeam === 'La mia squadra');
+    const spent = mine.reduce((s, r) => s + (parseInt(r.dataset.price, 10) || 0), 0);
+    document.getElementById('stat-spent').innerHTML = spent + '<span style="font-size:0.9rem;color:var(--ink-faint);"> / 500</span>';
+    document.getElementById('stat-assigned').innerHTML = assigned.length + '<span style="font-size:0.9rem;color:var(--ink-faint);"> / ' + all.length + '</span>';
+    document.getElementById('stat-free').textContent = all.length - assigned.length;
+    const topFree = all.filter(r => r.dataset.status !== 'assegnato').sort((a, b) => parseFloat(b.dataset.airating) - parseFloat(a.dataset.airating))[0];
+    document.getElementById('stat-target').textContent = topFree ? topFree.querySelector('.pname').textContent : '—';
+  }
+
+  // ---------------- importazione listone ufficiale (.xlsx / .xls / .csv) ----------------
+  const HEADER_ALIASES = {
+    id: ['id'], r: ['r'], rm: ['rm'], nome: ['nome'], squadra: ['squadra'],
+    qta: ['qta'], qti: ['qti'], diff: ['diff'],
+    qtam: ['qtam'], qtim: ['qtim'], diffm: ['diffm'],
+    fvm: ['fvm'], fvmm: ['fvmm'],
+  };
+  const normalizeHeader = h => String(h).toLowerCase().replace(/[\s.]/g, '');
+
+  function buildAssignSelect() {
+    return '<select><option>Assegna a…</option>' + TEAM_NAMES.map(t => `<option>${t}</option>`).join('') + '</select>';
+  }
+
+  function renderImportedListone(players) {
+    listoneBody.innerHTML = players.map(p => {
+      const status = p.status === 'assegnato' ? 'assegnato' : 'libero';
+      const extraAttrs = status === 'assegnato'
+        ? ` data-assigned-team="${p.assignedTeam}" data-price="${p.price}"`
+        : '';
+      const cell = status === 'assegnato'
+        ? assignedCellHTML(p.assignedTeam, p.price)
+        : `<div class="assign-inline">${buildAssignSelect()}<input type="number" placeholder="Cred."><button type="button" class="assign-btn">✓</button></div>`;
+      return `
+      <tr data-role="${p.role}" data-team="${p.team}" data-airating="${p.airating}" data-status="${status}"${extraAttrs}>
+        <td><span class="role-pill ${p.role}">${p.role}</span></td>
+        <td><div class="pname">${p.name}</div><div class="pteam">${p.team}</div></td>
+        <td class="ai-val">${p.airating}</td>
+        <td>${cell}</td>
+      </tr>`;
+    }).join('');
+
+    teamFilter.innerHTML = '<option value="ALL">Tutte le squadre</option>';
+    [...new Set(players.map(p => p.team))].sort().forEach(t => {
+      const opt = document.createElement('option');
+      opt.value = t; opt.textContent = t;
+      teamFilter.appendChild(opt);
+    });
+
+    applyFilters();
+    refreshTeamRosters();
+    refreshStats();
+  }
+
+  function showImportStatus(kind, message) {
+    const box = document.getElementById('import-status');
+    box.hidden = false;
+    box.className = 'import-status ' + kind;
+    box.textContent = message;
+  }
+
+  function parseListoneFile(file) {
+    const isCsv = /\.csv$/i.test(file.name);
+    const reader = new FileReader();
+    reader.onerror = () => showImportStatus('error', 'Non sono riuscito a leggere il file. Riprova.');
+    reader.onload = (e) => {
+      try {
+        const workbook = isCsv
+          ? XLSX.read(e.target.result, { type: 'string' })
+          : XLSX.read(e.target.result, { type: 'array' });
+        const sheet = workbook.Sheets[workbook.SheetNames[0]];
+        const rowsData = XLSX.utils.sheet_to_json(sheet, { defval: '' });
+        if (!rowsData.length) { showImportStatus('error', 'Il file sembra vuoto.'); return; }
+
+        const originalKeys = Object.keys(rowsData[0]);
+        const colFor = {};
+        originalKeys.forEach(k => {
+          const norm = normalizeHeader(k);
+          Object.entries(HEADER_ALIASES).forEach(([field, aliases]) => {
+            if (aliases.includes(norm)) colFor[field] = k;
+          });
+        });
+
+        if (!colFor.r || !colFor.nome || !colFor.squadra) {
+          showImportStatus('error', 'Colonne obbligatorie mancanti: servono almeno R, Nome e Squadra. Controlla l\'intestazione del file.');
+          return;
+        }
+
+        const players = rowsData
+          .map(row => {
+            const fvm = parseFloat(row[colFor.fvm]) || 0;
+            const qtA = parseFloat(row[colFor.qta]) || 0;
+            return {
+              role: String(row[colFor.r]).trim().toUpperCase(),
+              roleMantra: colFor.rm ? String(row[colFor.rm]).trim() : '',
+              name: String(row[colFor.nome]).trim(),
+              team: String(row[colFor.squadra]).trim(),
+              airating: fvm || qtA || 0,
+            };
+          })
+          .filter(p => p.name && ['P', 'D', 'C', 'A'].includes(p.role));
+
+        if (!players.length) {
+          showImportStatus('error', 'Nessun giocatore valido trovato nel file.');
+          return;
+        }
+
+        renderImportedListone(players);
+        persistAsta();
+        showImportStatus('ok', `Importati ${players.length} giocatori da "${file.name}". Colonne riconosciute: ${Object.keys(colFor).join(', ').toUpperCase()}.`);
+      } catch (err) {
+        showImportStatus('error', 'Formato file non riconosciuto. Assicurati che sia un .xlsx, .xls o .csv valido.');
+      }
+    };
+    if (isCsv) reader.readAsText(file); else reader.readAsArrayBuffer(file);
+  }
+
+  const dropzone = document.getElementById('dropzone');
+  const fileInput = document.getElementById('listone-file');
+  document.getElementById('browse-btn').addEventListener('click', () => fileInput.click());
+  fileInput.addEventListener('change', () => { if (fileInput.files[0]) parseListoneFile(fileInput.files[0]); });
+  ['dragover', 'dragenter'].forEach(evt => dropzone.addEventListener(evt, (e) => { e.preventDefault(); dropzone.classList.add('drag'); }));
+  ['dragleave', 'drop'].forEach(evt => dropzone.addEventListener(evt, (e) => { e.preventDefault(); dropzone.classList.remove('drag'); }));
+  dropzone.addEventListener('drop', (e) => { if (e.dataTransfer.files[0]) parseListoneFile(e.dataTransfer.files[0]); });
+
+  document.getElementById('credits').addEventListener('input', persistAsta);
+
+  // ripristina il listone (con le assegnazioni già fatte) salvato nel browser
+  if (astaSaved && astaSaved.players && astaSaved.players.length) {
+    renderImportedListone(astaSaved.players);
+    showImportStatus('ok', `Ripreso il listone salvato: ${astaSaved.players.length} giocatori.`);
+  }
+
+  applyFilters();
+  refreshTeamRosters();
+  refreshStats();
+</script>

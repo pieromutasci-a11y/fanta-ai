@@ -187,6 +187,49 @@
               </div>
             </div>
           </div>
+
+          <div class="modifier-block full-span" data-enabled="true" id="nl-panchina-block">
+            <div class="role-row">
+              <div class="name">Lunghezza panchina</div>
+              <label class="switch"><input type="checkbox" class="mod-toggle" checked><span class="track"></span><span class="thumb"></span></label>
+            </div>
+            <div class="modifier-detail">
+              <div class="mode-cards" id="nl-panchina-tipo">
+                <div class="mode-card active" data-value="standard">
+                  <div class="t">Standard</div>
+                  <div class="d">Un numero fisso di panchinari, in ordine di priorità</div>
+                </div>
+                <div class="mode-card" data-value="libera">
+                  <div class="t">Libera</div>
+                  <div class="d">Tutta la rosa non titolare è disponibile in panchina</div>
+                </div>
+              </div>
+              <div class="field" style="max-width:16rem; margin-top:0.8rem;">
+                <label>Numero di panchinari (se standard)</label>
+                <div class="credit-input"><input type="number" id="nl-panchina-lunghezza" value="3" min="1" max="10"><span class="unit">giocatori</span></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="modifier-block full-span" data-enabled="true" id="nl-switch-block">
+            <div class="role-row">
+              <div class="name">Switch</div>
+              <label class="switch"><input type="checkbox" class="mod-toggle" checked><span class="track"></span><span class="thumb"></span></label>
+            </div>
+            <div class="modifier-detail">
+              <p class="hint">Abbina in anticipo un titolare a un panchinaro: se il titolare non gioca dal 1' nella sua squadra reale, il panchinaro abbinato lo sostituisce in automatico — non conta come cambio.</p>
+              <div class="mode-cards" id="nl-switch-modalita">
+                <div class="mode-card active" data-value="Basic">
+                  <div class="t">Basic</div>
+                  <div class="d">Lo switch è possibile solo tra giocatori dello stesso ruolo</div>
+                </div>
+                <div class="mode-card" data-value="Plus">
+                  <div class="t">Plus</div>
+                  <div class="d">Lo switch è possibile anche tra ruoli diversi, con cambio modulo</div>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -364,6 +407,12 @@
         </div>
         <p class="pitch-hint">Clicca su una maglia vuota o già assegnata per cambiare giocatore. La stella imposta il capitano.</p>
         <div class="pitch-field" id="pitch-field"><!-- righe generate da script --></div>
+
+        <div class="bench-section" id="bench-section" hidden>
+          <h3>Panchina <span class="hint" id="bench-hint"></span></h3>
+          <div class="bench-field" id="bench-field"><!-- righe generate da script --></div>
+        </div>
+
         <div class="pitch-actions">
           <span class="save-note" id="save-note"></span>
         </div>
@@ -422,6 +471,21 @@
       <button class="chip" data-role="A" type="button">A</button>
     </div>
     <div class="slot-picker-list" id="listone-picker-list"><!-- generata da script --></div>
+  </div>
+</div>
+
+<!-- overlay per panchina e switch -->
+<div class="slot-picker-overlay" id="bs-picker-overlay" hidden>
+  <div class="slot-picker" role="dialog" aria-modal="true" aria-labelledby="bs-picker-title">
+    <div class="slot-picker-head">
+      <h3 id="bs-picker-title">Panchina</h3>
+      <button class="slot-picker-close" id="bs-picker-close" type="button" aria-label="Chiudi">✕</button>
+    </div>
+    <input type="search" id="bs-picker-search" placeholder="Cerca nella rosa…">
+    <div class="slot-picker-actions">
+      <button type="button" class="btn ghost" id="bs-clear-btn" hidden>✕ Rimuovi</button>
+    </div>
+    <div class="slot-picker-list" id="bs-picker-list"><!-- generata da script --></div>
   </div>
 </div>
 
@@ -540,6 +604,14 @@
   // soglia e attivazione arrivano dalle impostazioni scelte alla creazione della lega.
   function modDifesaSoglia(league) { return (league.modificatori && league.modificatori.difesaSoglia) || 4; }
   function modDifesaAttivo(league) { return !league.modificatori || league.modificatori.difesaAttivo !== false; }
+
+  // impostazioni di panchina e switch scelte alla creazione della lega, con valori di default per le leghe più vecchie
+  function panchinaSettings(league) {
+    return (league.panchina) || { attiva: true, tipo: "libera", lunghezza: 3 };
+  }
+  function switchSettings(league) {
+    return (league.switchOpt) || { attivo: false, modalita: "Basic" };
+  }
   function defenseModifier(avg) {
     if (avg >= 7.5) return 4;
     if (avg >= 7) return 3;
@@ -580,6 +652,11 @@
     return rosterOf(currentLeague)[role]
       .map(p => ({ ...p, role, adjExp: adjustedExp(p, currentLeague) }))
       .sort((a, b) => b.adjExp - a.adjExp);
+  }
+
+  // tutta la rosa, di qualunque ruolo, ordinata per valore — usata per la panchina (non è legata a un ruolo fisso)
+  function ratedAll() {
+    return ["P", "D", "C", "A"].flatMap(ratedRole).sort((a, b) => b.adjExp - a.adjExp);
   }
 
   /* ---------------- vista: le mie leghe ---------------- */
@@ -680,7 +757,10 @@
     document.querySelectorAll("#nl-market-type .chip").forEach((c, i) => c.classList.toggle("active", i === 0));
     document.querySelectorAll("#nl-moduli .chip").forEach(c => c.classList.toggle("active", ["3-4-3", "3-5-2", "4-3-3", "4-4-2"].includes(c.dataset.modulo)));
     document.getElementById("nl-mod-difesa-soglia").value = 4;
-    document.querySelectorAll(".modifier-block .mod-toggle").forEach(t => { t.checked = !t.closest(".modifier-block").querySelector(".name").textContent.includes("attacco"); t.closest(".modifier-block").dataset.enabled = t.checked; });
+    document.getElementById("nl-panchina-lunghezza").value = 3;
+    document.querySelectorAll("#nl-panchina-tipo .mode-card").forEach((c, i) => c.classList.toggle("active", i === 0));
+    document.querySelectorAll("#nl-switch-modalita .mode-card").forEach((c, i) => c.classList.toggle("active", i === 0));
+    document.querySelectorAll("#view-nuova-lega .modifier-block .mod-toggle").forEach(t => { t.checked = !t.closest(".modifier-block").querySelector(".name").textContent.includes("attacco"); t.closest(".modifier-block").dataset.enabled = t.checked; });
     switchView("view-nuova-lega");
     document.getElementById("nl-name").focus();
   }
@@ -697,7 +777,7 @@
   });
 
   // selezione singola: modalità e tipo di mercato
-  ["#nl-modalita", "#nl-market-type"].forEach(sel => {
+  ["#nl-modalita", "#nl-market-type", "#nl-panchina-tipo", "#nl-switch-modalita"].forEach(sel => {
     const group = document.querySelector(sel);
     group.addEventListener("click", (e) => {
       const item = e.target.closest(".mode-card, .chip"); if (!item) return;
@@ -734,6 +814,15 @@
       modificatori: {
         difesaAttivo: document.getElementById("nl-mod-difesa").dataset.enabled === "true",
         difesaSoglia: parseInt(document.getElementById("nl-mod-difesa-soglia").value, 10) || 4,
+      },
+      panchina: {
+        attiva: document.getElementById("nl-panchina-block").dataset.enabled === "true",
+        tipo: document.querySelector("#nl-panchina-tipo .mode-card.active").dataset.value,
+        lunghezza: parseInt(document.getElementById("nl-panchina-lunghezza").value, 10) || 3,
+      },
+      switchOpt: {
+        attivo: document.getElementById("nl-switch-block").dataset.enabled === "true",
+        modalita: document.querySelector("#nl-switch-modalita .mode-card.active").dataset.value,
       },
       salvata: "oggi",
       seed: LEAGUES.length,
@@ -933,9 +1022,18 @@
     loadFormationState(currentLeague.modulo);
   });
 
+  function benchSlotCount(league) {
+    const panch = panchinaSettings(league);
+    return panch.tipo === "standard" ? panch.lunghezza : 0; // "libera" non usa slot espliciti: è tutta la rosa rimasta
+  }
+
   function emptySlots(modulo) {
     const [nd, nc, na] = MODULES[modulo];
-    return { modulo, P: [null], D: Array(nd).fill(null), C: Array(nc).fill(null), A: Array(na).fill(null), captain: null };
+    const benchN = benchSlotCount(currentLeague);
+    return {
+      modulo, P: [null], D: Array(nd).fill(null), C: Array(nc).fill(null), A: Array(na).fill(null),
+      captain: null, bench: Array(benchN).fill(null), switches: {},
+    };
   }
 
   function autoFillState(modulo) {
@@ -944,7 +1042,13 @@
     // se manca un ruolo in rosa (es. nessun portiere ancora acquistato) la maglia resta vuota invece di rompersi
     const starters = { P: [P[0] ? P[0].name : null], D: D.slice(0, nd).map(p => p.name), C: C.slice(0, nc).map(p => p.name), A: A.slice(0, na).map(p => p.name) };
     const captainPool = [...C.slice(0, nc), ...A.slice(0, na)].sort((a, b) => b.adjExp - a.adjExp);
-    return { modulo, ...starters, captain: captainPool[0] ? captainPool[0].name : (P[0] ? P[0].name : null) };
+    const usedNames = new Set([...starters.P, ...starters.D, ...starters.C, ...starters.A].filter(Boolean));
+    const benchN = benchSlotCount(currentLeague);
+    const bench = benchN
+      ? ratedAll().filter(p => !usedNames.has(p.name)).slice(0, benchN).map(p => p.name)
+      : [];
+    while (bench.length < benchN) bench.push(null);
+    return { modulo, ...starters, captain: captainPool[0] ? captainPool[0].name : (P[0] ? P[0].name : null), bench, switches: {} };
   }
 
   function resizeState(state, modulo) {
@@ -984,9 +1088,47 @@
     const arr = state[role];
     const swapIdx = arr.indexOf(name);
     if (swapIdx !== -1 && swapIdx !== index) arr[swapIdx] = arr[index];
+    const removed = arr[index];
     arr[index] = name;
+    if (removed && removed !== name && state.switches[removed]) delete state.switches[removed];
     const filledNames = [...state.P, ...state.D, ...state.C, ...state.A].filter(Boolean);
     if (!state.captain || !filledNames.includes(state.captain)) state.captain = name;
+    saveState(state);
+    renderAll();
+  }
+
+  // panchina: gli stessi meccanismi degli slot titolari, ma senza vincolo di ruolo fisso
+  function assignBench(index, name) {
+    const state = getState();
+    const arr = state.bench;
+    const swapIdx = arr.indexOf(name);
+    if (swapIdx !== -1 && swapIdx !== index) arr[swapIdx] = arr[index];
+    const removed = arr[index];
+    arr[index] = name;
+    if (removed) Object.keys(state.switches).forEach(s => { if (state.switches[s] === removed) delete state.switches[s]; });
+    saveState(state);
+    renderAll();
+  }
+  function clearBench(index) {
+    const state = getState();
+    const removed = state.bench[index];
+    state.bench[index] = null;
+    if (removed) Object.keys(state.switches).forEach(s => { if (state.switches[s] === removed) delete state.switches[s]; });
+    saveState(state);
+    renderAll();
+  }
+
+  // switch: abbina un titolare a un panchinaro, cosi' se il titolare non gioca entra lui in automatico
+  function setSwitchPair(starterName, benchName) {
+    const state = getState();
+    Object.keys(state.switches).forEach(s => { if (state.switches[s] === benchName) delete state.switches[s]; });
+    state.switches[starterName] = benchName;
+    saveState(state);
+    renderAll();
+  }
+  function clearSwitchFor(starterName) {
+    const state = getState();
+    delete state.switches[starterName];
     saveState(state);
     renderAll();
   }
@@ -1003,6 +1145,7 @@
     const removed = state[role][index];
     state[role][index] = null;
     if (state.captain === removed) state.captain = null;
+    if (removed && state.switches[removed]) delete state.switches[removed];
     saveState(state);
     renderAll();
   }
@@ -1088,6 +1231,99 @@
     closeSlotPicker();
   });
 
+  /* ---------------- selettore panchina e switch ---------------- */
+  let pendingBS = null; // { kind: "bench", index } | { kind: "switch", starterName, starterRole }
+  const bsOverlay = document.getElementById("bs-picker-overlay");
+  const bsList = document.getElementById("bs-picker-list");
+  const bsSearch = document.getElementById("bs-picker-search");
+  const bsClearBtn = document.getElementById("bs-clear-btn");
+
+  function closeBSPicker() { bsOverlay.hidden = true; pendingBS = null; }
+  document.getElementById("bs-picker-close").addEventListener("click", closeBSPicker);
+  bsOverlay.addEventListener("click", (e) => { if (e.target === bsOverlay) closeBSPicker(); });
+  document.addEventListener("keydown", (e) => { if (e.key === "Escape" && !bsOverlay.hidden) closeBSPicker(); });
+  bsSearch.addEventListener("input", () => renderBSList(bsSearch.value));
+
+  function openBenchPicker(index) {
+    const state = getState();
+    pendingBS = { kind: "bench", index };
+    document.getElementById("bs-picker-title").textContent = "Scegli il panchinaro";
+    bsClearBtn.hidden = !state.bench[index];
+    bsClearBtn.textContent = "✕ Lascia vuoto";
+    bsSearch.value = "";
+    renderBSList("");
+    bsOverlay.hidden = false;
+    bsSearch.focus();
+  }
+
+  function openSwitchPicker(starterName, starterRole) {
+    pendingBS = { kind: "switch", starterName, starterRole };
+    document.getElementById("bs-picker-title").textContent = "Switch per " + starterName.split(" ").slice(-1)[0];
+    const state = getState();
+    bsClearBtn.hidden = !state.switches[starterName];
+    bsClearBtn.textContent = "✕ Rimuovi abbinamento";
+    bsSearch.value = "";
+    renderBSList("");
+    bsOverlay.hidden = false;
+    bsSearch.focus();
+  }
+
+  function currentBenchPlayers(state) {
+    const panch = panchinaSettings(currentLeague);
+    if (panch.tipo === "standard") {
+      return state.bench.filter(Boolean).map(name => ratedAll().find(p => p.name === name)).filter(Boolean);
+    }
+    const used = new Set([...state.P, ...state.D, ...state.C, ...state.A].filter(Boolean));
+    return ratedAll().filter(p => !used.has(p.name));
+  }
+
+  function renderBSList(query) {
+    if (!pendingBS) return;
+    const state = getState();
+    const q = query.trim().toLowerCase();
+
+    let candidates, currentName;
+    if (pendingBS.kind === "bench") {
+      const usedElsewhere = new Set([...state.P, ...state.D, ...state.C, ...state.A, ...state.bench].filter(Boolean));
+      currentName = state.bench[pendingBS.index];
+      candidates = ratedAll().filter(p => (p.name === currentName || !usedElsewhere.has(p.name)) && (!q || p.name.toLowerCase().includes(q)));
+    } else {
+      const modalitaBasic = switchSettings(currentLeague).modalita !== "Plus";
+      currentName = state.switches[pendingBS.starterName] || null;
+      const pairedElsewhere = new Set(Object.values(state.switches).filter(n => n !== currentName));
+      candidates = currentBenchPlayers(state).filter(p =>
+        (!modalitaBasic || p.role === pendingBS.starterRole) &&
+        !pairedElsewhere.has(p.name) &&
+        (!q || p.name.toLowerCase().includes(q))
+      );
+    }
+
+    bsList.innerHTML = candidates.map(p => {
+      const isCurrent = p.name === currentName;
+      return `
+        <button type="button" class="picker-row${isCurrent ? " current" : ""}" data-name="${p.name}">
+          <span class="role-pill ${p.role}">${p.role}</span>
+          <span class="picker-name">${p.name}<span class="picker-team">${p.team}</span></span>
+          <span class="picker-exp">${p.adjExp.toFixed(1)} pt.</span>
+          ${isCurrent ? '<span class="picker-swap">selezionato</span>' : '<span class="picker-add">+ Scegli</span>'}
+        </button>`;
+    }).join("") || '<p class="hint">Nessun candidato disponibile.</p>';
+  }
+
+  bsList.addEventListener("click", (e) => {
+    const row = e.target.closest(".picker-row"); if (!row || !pendingBS) return;
+    if (pendingBS.kind === "bench") assignBench(pendingBS.index, row.dataset.name);
+    else setSwitchPair(pendingBS.starterName, row.dataset.name);
+    closeBSPicker();
+  });
+
+  bsClearBtn.addEventListener("click", () => {
+    if (!pendingBS) return;
+    if (pendingBS.kind === "bench") clearBench(pendingBS.index);
+    else clearSwitchFor(pendingBS.starterName);
+    closeBSPicker();
+  });
+
   /* ---------------- render formazione ---------------- */
   function renderAll() {
     if (!currentLeague) return;
@@ -1141,6 +1377,7 @@
   function renderPitch(state) {
     const field = document.getElementById("pitch-field");
     field.innerHTML = "";
+    const switchOn = switchSettings(currentLeague).attivo;
     ["A", "C", "D", "P"].forEach(role => {
       const row = document.createElement("div");
       row.className = "pitch-row";
@@ -1150,12 +1387,17 @@
         if (name) {
           const p = playerWithExp(role, name);
           const isCap = state.captain === name;
+          const partner = state.switches[name];
+          const switchBtn = switchOn
+            ? `<button type="button" class="switch-btn${partner ? " paired" : ""}" data-switch-for="${name}" data-switch-role="${role}">🔀 ${partner ? partner.split(" ").slice(-1)[0] : "switch"}</button>`
+            : "";
           slot.innerHTML = `
             <button type="button" class="dot role-${role}${isCap ? " cap" : ""}" data-role="${role}" data-index="${index}">${initials(p.name)}</button>
             <button type="button" class="cap-star${isCap ? " active" : ""}" title="Imposta capitano" data-cap="${p.name}">★</button>
             <button type="button" class="clear-slot" title="Rimuovi dalla formazione" data-clear-role="${role}" data-clear-index="${index}">✕</button>
             <div class="name">${p.name.split(" ").slice(-1)[0]}</div>
-            <div class="exp">${p.adjExp.toFixed(1)}</div>`;
+            <div class="exp">${p.adjExp.toFixed(1)}</div>
+            ${switchBtn}`;
         } else {
           slot.innerHTML = `
             <button type="button" class="dot empty" data-role="${role}" data-index="${index}">+</button>
@@ -1173,25 +1415,64 @@
     if (clearBtn) { clearSlot(clearBtn.dataset.clearRole, parseInt(clearBtn.dataset.clearIndex, 10)); return; }
     const capBtn = e.target.closest(".cap-star");
     if (capBtn) { setCaptain(capBtn.dataset.cap); return; }
+    const switchBtn = e.target.closest(".switch-btn");
+    if (switchBtn) { openSwitchPicker(switchBtn.dataset.switchFor, switchBtn.dataset.switchRole); return; }
     const dot = e.target.closest(".dot");
     if (dot) openSlotPicker(dot.dataset.role, parseInt(dot.dataset.index, 10));
   });
 
   function renderBench(state) {
-    const used = new Set([...state.P, ...state.D, ...state.C, ...state.A].filter(Boolean));
-    const bench = ["P", "D", "C", "A"].flatMap(role => ratedRole(role).filter(p => !used.has(p.name)));
-    const list = document.getElementById("bench-list");
-    list.innerHTML = "";
-    bench
-      .sort((a, b) => b.adjExp - a.adjExp)
-      .forEach(p => {
-        const row = document.createElement("div");
-        row.className = "list-row";
-        row.innerHTML = `<span class="role-pill ${p.role}">${p.role}</span> ${p.name} <span class="t">${p.adjExp.toFixed(1)} pt.</span>`;
-        list.appendChild(row);
-      });
-    if (!bench.length) list.innerHTML = '<p class="hint">Nessuno in panchina.</p>';
+    const panch = panchinaSettings(currentLeague);
+    const section = document.getElementById("bench-section");
+    const sidebarList = document.getElementById("bench-list");
+
+    if (panch.tipo === "standard") {
+      // panchina esplicita: slot fissi che scegli tu, in ordine di priorità
+      section.hidden = false;
+      document.getElementById("bench-hint").textContent = "in ordine di priorità — usata per lo switch";
+      const field = document.getElementById("bench-field");
+      field.innerHTML = state.bench.map((name, index) => {
+        if (name) {
+          const p = ratedAll().find(x => x.name === name);
+          if (!p) return "";
+          return `
+            <div class="player-chip">
+              <button type="button" class="dot role-${p.role}" data-bench-index="${index}">${initials(p.name)}</button>
+              <button type="button" class="clear-slot" title="Rimuovi dalla panchina" data-bench-clear="${index}">✕</button>
+              <div class="name">${p.name.split(" ").slice(-1)[0]}</div>
+              <div class="priority">${index + 1}° · ${p.adjExp.toFixed(1)} pt.</div>
+            </div>`;
+        }
+        return `
+          <div class="player-chip">
+            <button type="button" class="dot empty" data-bench-index="${index}">+</button>
+            <div class="name">panchinaro</div>
+            <div class="priority">${index + 1}°</div>
+          </div>`;
+      }).join("");
+
+      const used = new Set([...state.P, ...state.D, ...state.C, ...state.A, ...state.bench].filter(Boolean));
+      const rest = ratedAll().filter(p => !used.has(p.name));
+      sidebarList.innerHTML = rest.length
+        ? rest.map(p => `<div class="list-row"><span class="role-pill ${p.role}">${p.role}</span> ${p.name} <span class="t">non in panchina</span></div>`).join("")
+        : '<p class="hint">Tutta la rosa è titolare o in panchina.</p>';
+    } else {
+      // panchina libera: tutta la rosa non titolare, in automatico
+      section.hidden = true;
+      const used = new Set([...state.P, ...state.D, ...state.C, ...state.A].filter(Boolean));
+      const bench = ratedAll().filter(p => !used.has(p.name));
+      sidebarList.innerHTML = bench.length
+        ? bench.map(p => `<div class="list-row"><span class="role-pill ${p.role}">${p.role}</span> ${p.name} <span class="t">${p.adjExp.toFixed(1)} pt.</span></div>`).join("")
+        : '<p class="hint">Nessuno in panchina.</p>';
+    }
   }
+
+  document.getElementById("bench-field").addEventListener("click", (e) => {
+    const clearBtn = e.target.closest(".clear-slot");
+    if (clearBtn) { clearBench(parseInt(clearBtn.dataset.benchClear, 10)); return; }
+    const dot = e.target.closest(".dot");
+    if (dot) openBenchPicker(parseInt(dot.dataset.benchIndex, 10));
+  });
 
   function renderRoster() {
     const roster = rosterOf(currentLeague);

@@ -213,6 +213,24 @@ main.stage { padding: 2.2rem 0 4rem; }
 .player-chip .name { font-size: 0.76rem; font-weight: 700; text-align: center; }
 .player-chip .exp { font-size: 0.7rem; color: var(--ink-faint); font-variant-numeric: tabular-nums; }
 
+.switch-btn {
+  border: 1px solid var(--line); background: var(--paper-raised); color: var(--ink-faint);
+  border-radius: 999px; padding: 0.1rem 0.5rem; font-size: 0.64rem; font-weight: 700;
+  cursor: pointer; white-space: nowrap; max-width: 6rem; overflow: hidden; text-overflow: ellipsis;
+}
+.switch-btn:hover { border-color: var(--pitch-deep); color: var(--pitch-deep); }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .switch-btn:hover { color: var(--pitch-bright); } }
+:root[data-theme="dark"] .switch-btn:hover { color: var(--pitch-bright); }
+.switch-btn.paired { background: var(--gold-tint); border-color: color-mix(in srgb, var(--gold) 45%, var(--line)); color: var(--gold); }
+
+/* ============ panchina interattiva (modalità "standard") ============ */
+.bench-section { margin-top: 1.1rem; padding-top: 1.1rem; border-top: 1px solid var(--line); }
+.bench-section h3 { font-size: 0.9rem; display: flex; align-items: baseline; gap: 0.5rem; margin-bottom: 0.8rem; }
+.bench-section .hint { font-size: 0.76rem; font-weight: 500; color: var(--ink-faint); }
+.bench-field { display: flex; gap: 0.7rem; flex-wrap: wrap; }
+.bench-field .player-chip .dot { width: 2.1rem; height: 2.1rem; font-size: 0.7rem; }
+.bench-field .player-chip .priority { font-size: 0.62rem; color: var(--ink-faint); font-weight: 700; }
+
 .pitch-actions { display: flex; align-items: center; gap: 0.8rem; margin-top: 1.1rem; flex-wrap: wrap; }
 .save-note { font-size: 0.82rem; color: var(--ink-faint); font-weight: 600; }
 .save-note.ok { color: var(--pitch-deep); }

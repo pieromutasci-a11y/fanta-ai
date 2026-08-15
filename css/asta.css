@@ -247,3 +247,18 @@ input[type="text"], input[type="number"], select {
 .team-roster-list .list-row { display: flex; align-items: center; gap: 0.45rem; font-size: 0.8rem; }
 .team-roster-list .list-row .t { margin-left: auto; font-size: 0.74rem; color: var(--ink-faint); font-variant-numeric: tabular-nums; }
 .team-roster-list .hint { font-size: 0.78rem; color: var(--ink-faint); }
+
+/* ============ strategia in linguaggio naturale (parser a regole) ============ */
+.strategy-card textarea {
+  width: 100%; border: 1px solid var(--line); border-radius: 10px; padding: 0.65rem 0.75rem;
+  background: var(--paper); color: var(--ink); font: inherit; resize: vertical; min-height: 4.5rem;
+}
+.strategy-result { margin-top: 0.9rem; display: grid; gap: 0.5rem; }
+.strategy-result .sr-group-label { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--ink-faint); margin-top: 0.4rem; }
+.strategy-result .sr-group-label:first-child { margin-top: 0; }
+.constraint-chip {
+  display: flex; align-items: flex-start; gap: 0.5rem; border: 1px solid var(--line); border-radius: 10px;
+  padding: 0.5rem 0.65rem; font-size: 0.82rem; background: var(--paper); line-height: 1.35;
+}
+.constraint-chip .ico { flex: none; font-size: 0.95rem; }
+.constraint-chip.unparsed { border-color: color-mix(in srgb, var(--risk) 30%, var(--line)); background: var(--risk-tint); color: var(--risk); }

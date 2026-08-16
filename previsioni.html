@@ -1,0 +1,186 @@
+<meta charset="utf-8">
+<title>FantaAI — Previsioni</title>
+<link rel="stylesheet" href="css/base.css">
+<link rel="stylesheet" href="css/asta.css">
+<style>
+  #previsioni-table th.num, #previsioni-table td.num { text-align: right; font-variant-numeric: tabular-nums; }
+  #previsioni-table { font-size: 0.8rem; }
+  #previsioni-table td.ai-val { color: var(--pitch-deep); font-weight: 800; }
+  @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) #previsioni-table td.ai-val { color: var(--pitch-bright); } }
+  :root[data-theme="dark"] #previsioni-table td.ai-val { color: var(--pitch-bright); }
+  #listone-wrap { overflow-x: auto; }
+</style>
+
+<header class="top">
+  <div class="wrap topbar">
+    <a class="brand" href="index.html"><span class="mark">⚽</span> FantaAI</a>
+    <span class="crumb">Previsioni <b>AI 2026/27</b></span>
+    <nav class="links">
+      <a href="asta.html">Guida all'asta</a>
+      <a href="formazione.html">Formazione</a>
+    </nav>
+  </div>
+</header>
+
+<main class="stage">
+  <div class="wrap">
+    <div class="page-head">
+      <h1>Previsioni AI — stagione 2026/27</h1>
+      <p>Per ogni giocatore del listone, cosa prevede il modello per la prossima stagione: fantavoto, gol, assist, presenze, rigori, cartellini. Filtra per reparto per confrontare solo i giocatori dello stesso ruolo.</p>
+    </div>
+
+    <div class="toolbar">
+      <input type="search" placeholder="Cerca giocatore o squadra…" id="search-player">
+      <select id="team-filter"><option value="ALL">Tutte le squadre</option></select>
+      <select id="sort-select">
+        <option value="fantavoto-desc">Fantavoto previsto ↓</option>
+        <option value="fantavoto-asc">Fantavoto previsto ↑</option>
+        <option value="gol-desc">Gol previsti ↓</option>
+        <option value="assist-desc">Assist previsti ↓</option>
+        <option value="presenze-desc">Presenze previste ↓</option>
+        <option value="name-asc">Nome A-Z</option>
+      </select>
+    </div>
+    <div class="toolbar">
+      <div class="role-filter" id="role-filter">
+        <button class="active" data-role="ALL" type="button">Tutti</button>
+        <button data-role="P" type="button">Portieri</button>
+        <button data-role="D" type="button">Difensori</button>
+        <button data-role="C" type="button">Centrocampisti</button>
+        <button data-role="A" type="button">Attaccanti</button>
+      </div>
+      <span class="results-count" id="results-count"></span>
+    </div>
+
+    <div class="listone" id="listone-wrap">
+      <table class="listone-table" id="previsioni-table">
+        <thead>
+          <tr>
+            <th>Ruolo</th>
+            <th>Giocatore</th>
+            <th class="num">Fantavoto</th>
+            <th class="num">Voto</th>
+            <th class="num">Presenze</th>
+            <th class="num">Gol</th>
+            <th class="num">Assist</th>
+            <th class="num">Rig. segn.</th>
+            <th class="num">Rig. tirati</th>
+            <th class="num">Rig. parati</th>
+            <th class="num">Gol subiti</th>
+            <th class="num">Ammon.</th>
+            <th class="num">Espuls.</th>
+          </tr>
+        </thead>
+        <tbody id="previsioni-body"></tbody>
+      </table>
+    </div>
+
+    <p class="hint" style="margin-top:0.9rem;">
+      Previsioni generate da un modello Gradient Boosting (LightGBM) allenato sulle stagioni Serie A 2020/21-2025/26,
+      un modello separato per ciascun reparto. Sono stime statistiche, non certezze: usale come punto di partenza per
+      confrontare i giocatori, non come verità assoluta — specialmente per chi ha poco storico (esordienti, nuovi arrivi).
+    </p>
+  </div>
+</main>
+
+<footer class="site wrap">FantaAI — previsioni generate da un modello statistico, non consigli di scommessa.</footer>
+
+<script src="js/xlsx.mini.min.js"></script>
+<script>
+  const NUM_COLS = ['presenze', 'media_voto', 'media_fantavoto', 'gol_fatti', 'gol_subiti',
+    'rigori_segnati', 'rigori_tirati', 'rigori_parati', 'assist', 'ammonizioni', 'espulsioni'];
+
+  let PLAYERS = [];
+  let currentRole = 'ALL';
+
+  function fmt(n) {
+    const v = parseFloat(n);
+    return Number.isFinite(v) ? v.toFixed(2) : '—';
+  }
+
+  function renderRows(players) {
+    const body = document.getElementById('previsioni-body');
+    body.innerHTML = players.map(p => `
+      <tr data-role="${p.ruolo}" data-team="${p.squadra}">
+        <td><span class="role-pill ${p.ruolo}">${p.ruolo}</span></td>
+        <td><div class="pname">${p.nome}</div><div class="pteam">${p.squadra}</div></td>
+        <td class="num ai-val">${fmt(p.media_fantavoto)}</td>
+        <td class="num">${fmt(p.media_voto)}</td>
+        <td class="num">${fmt(p.presenze)}</td>
+        <td class="num">${fmt(p.gol_fatti)}</td>
+        <td class="num">${fmt(p.assist)}</td>
+        <td class="num">${fmt(p.rigori_segnati)}</td>
+        <td class="num">${fmt(p.rigori_tirati)}</td>
+        <td class="num">${fmt(p.rigori_parati)}</td>
+        <td class="num">${fmt(p.gol_subiti)}</td>
+        <td class="num">${fmt(p.ammonizioni)}</td>
+        <td class="num">${fmt(p.espulsioni)}</td>
+      </tr>`).join('');
+    document.getElementById('results-count').textContent = players.length + ' giocatori';
+  }
+
+  function applyFiltersAndSort() {
+    const search = document.getElementById('search-player').value.trim().toLowerCase();
+    const team = document.getElementById('team-filter').value;
+    const sort = document.getElementById('sort-select').value;
+
+    let filtered = PLAYERS.filter(p => {
+      if (currentRole !== 'ALL' && p.ruolo !== currentRole) return false;
+      if (team !== 'ALL' && p.squadra !== team) return false;
+      if (search && !(p.nome.toLowerCase().includes(search) || p.squadra.toLowerCase().includes(search))) return false;
+      return true;
+    });
+
+    const sorters = {
+      'fantavoto-desc': (a, b) => b.media_fantavoto - a.media_fantavoto,
+      'fantavoto-asc': (a, b) => a.media_fantavoto - b.media_fantavoto,
+      'gol-desc': (a, b) => b.gol_fatti - a.gol_fatti,
+      'assist-desc': (a, b) => b.assist - a.assist,
+      'presenze-desc': (a, b) => b.presenze - a.presenze,
+      'name-asc': (a, b) => a.nome.localeCompare(b.nome),
+    };
+    filtered.sort(sorters[sort] || sorters['fantavoto-desc']);
+    renderRows(filtered);
+  }
+
+  document.getElementById('role-filter').addEventListener('click', (e) => {
+    const btn = e.target.closest('button[data-role]');
+    if (!btn) return;
+    document.querySelectorAll('#role-filter button').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    currentRole = btn.dataset.role;
+    applyFiltersAndSort();
+  });
+  document.getElementById('search-player').addEventListener('input', applyFiltersAndSort);
+  document.getElementById('team-filter').addEventListener('change', applyFiltersAndSort);
+  document.getElementById('sort-select').addEventListener('change', applyFiltersAndSort);
+
+  fetch('data/previsioni_2026_27.csv')
+    .then(r => {
+      if (!r.ok) throw new Error('file non trovato');
+      return r.text();
+    })
+    .then(text => {
+      const workbook = XLSX.read(text, { type: 'string' });
+      const sheet = workbook.Sheets[workbook.SheetNames[0]];
+      const rows = XLSX.utils.sheet_to_json(sheet, { defval: '' });
+      PLAYERS = rows.map(r => {
+        const p = { nome: String(r.nome || '').trim(), ruolo: String(r.ruolo || '').trim(), squadra: String(r.squadra || '').trim() };
+        NUM_COLS.forEach(c => { p[c] = parseFloat(r[c]) || 0; });
+        return p;
+      }).filter(p => p.nome);
+
+      const teamFilter = document.getElementById('team-filter');
+      [...new Set(PLAYERS.map(p => p.squadra))].sort().forEach(t => {
+        const opt = document.createElement('option');
+        opt.value = t; opt.textContent = t;
+        teamFilter.appendChild(opt);
+      });
+
+      applyFiltersAndSort();
+    })
+    .catch(() => {
+      document.getElementById('previsioni-body').innerHTML =
+        '<tr><td colspan="13" style="text-align:center;color:var(--ink-faint);padding:2rem;">Non sono riuscito a caricare le previsioni (data/previsioni_2026_27.csv). Rigenera il file con lo script di training.</td></tr>';
+    });
+</script>

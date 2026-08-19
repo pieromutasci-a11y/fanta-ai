@@ -37,21 +37,6 @@
       </div>
 
       <div class="card">
-        <h2><span class="card-icon">🧾</span> Modalità</h2>
-        <p class="card-sub">Cambia i ruoli utilizzabili e i punteggi di riferimento.</p>
-        <div class="mode-cards">
-          <div class="mode-card active">
-            <div class="t">Classic</div>
-            <div class="d">Portiere, Difensore, Centrocampista, Attaccante</div>
-          </div>
-          <div class="mode-card">
-            <div class="t">Mantra</div>
-            <div class="d">Ruoli multipli per giocatore, moduli avanzati</div>
-          </div>
-        </div>
-      </div>
-
-      <div class="card">
         <h2><span class="card-icon">👥</span> Composizione rosa</h2>
         <p class="card-sub">Quanti giocatori per ruolo dovrà avere ogni squadra.</p>
         <div class="role-rows">
@@ -95,242 +80,15 @@
       </div>
 
       <div class="card full">
-        <h2><span class="card-icon">🛒</span> Tipo di mercato</h2>
-        <p class="card-sub">Come si svolge l'asta principale, più le eventuali finestre di mercato aggiuntive durante la stagione.</p>
-
-        <div class="chip-group" id="market-type-picker">
-          <button class="chip active" type="button">Asta classica</button>
-          <button class="chip" type="button">Asta smart</button>
-          <button class="chip" type="button">A buste chiuse</button>
-          <button class="chip" type="button">A quotazione</button>
-          <button class="chip" type="button">A gettone</button>
+        <h2><span class="card-icon">⚖️</span> Pesi per ruolo</h2>
+        <p class="card-sub">Decidi tu quanto contano le statistiche nel prezzo consigliato — puoi dare più peso alla fantamedia, alle presenze, poco ai gol, e cambiare il bilanciamento in modo diverso per ogni ruolo.</p>
+        <div class="chip-group" id="weights-role-picker">
+          <button class="chip active" type="button" data-role="P">Portieri</button>
+          <button class="chip" type="button" data-role="D">Difensori</button>
+          <button class="chip" type="button" data-role="C">Centrocampisti</button>
+          <button class="chip" type="button" data-role="A">Attaccanti</button>
         </div>
-
-        <div class="role-rows" style="margin-top:1.1rem;">
-          <div class="role-row">
-            <div class="name">Mercato di riparazione a metà stagione</div>
-            <label class="switch"><input type="checkbox" checked><span class="track"></span><span class="thumb"></span></label>
-          </div>
-          <div class="role-row">
-            <div class="name">Mercato scambi tra manager</div>
-            <label class="switch"><input type="checkbox" checked><span class="track"></span><span class="thumb"></span></label>
-          </div>
-          <div class="role-row">
-            <div class="name">Svincoli al buio</div>
-            <label class="switch"><input type="checkbox"><span class="track"></span><span class="thumb"></span></label>
-          </div>
-          <div class="role-row">
-            <div class="name">Prestiti tra squadre</div>
-            <label class="switch"><input type="checkbox"><span class="track"></span><span class="thumb"></span></label>
-          </div>
-        </div>
-      </div>
-
-      <div class="card full">
-        <h2><span class="card-icon">⚡</span> Bonus e malus</h2>
-        <p class="card-sub">Attiva le voci di punteggio della tua lega e imposta il valore assegnato a ciascuna.</p>
-        <table class="bonus-table">
-          <thead><tr><th>Voce</th><th></th><th class="val">Punti</th></tr></thead>
-          <tbody>
-            <tr><td>Gol fatto</td><td><label class="switch"><input type="checkbox" checked><span class="track"></span><span class="thumb"></span></label></td><td class="val"><input type="number" value="3" step="0.5"></td></tr>
-            <tr><td>Assist</td><td><label class="switch"><input type="checkbox" checked><span class="track"></span><span class="thumb"></span></label></td><td class="val"><input type="number" value="1" step="0.5"></td></tr>
-            <tr><td>Rigore parato</td><td><label class="switch"><input type="checkbox" checked><span class="track"></span><span class="thumb"></span></label></td><td class="val"><input type="number" value="3" step="0.5"></td></tr>
-            <tr><td>Rigore sbagliato</td><td><label class="switch"><input type="checkbox" checked><span class="track"></span><span class="thumb"></span></label></td><td class="val"><input type="number" value="-3" step="0.5"></td></tr>
-            <tr><td>Autogol</td><td><label class="switch"><input type="checkbox" checked><span class="track"></span><span class="thumb"></span></label></td><td class="val"><input type="number" value="-2" step="0.5"></td></tr>
-            <tr><td>Ammonizione</td><td><label class="switch"><input type="checkbox" checked><span class="track"></span><span class="thumb"></span></label></td><td class="val"><input type="number" value="-0.5" step="0.5"></td></tr>
-            <tr><td>Espulsione</td><td><label class="switch"><input type="checkbox" checked><span class="track"></span><span class="thumb"></span></label></td><td class="val"><input type="number" value="-1" step="0.5"></td></tr>
-            <tr><td>Portiere imbattuto</td><td><label class="switch"><input type="checkbox"><span class="track"></span><span class="thumb"></span></label></td><td class="val"><input type="number" value="1" step="0.5"></td></tr>
-          </tbody>
-        </table>
-      </div>
-
-      <div class="card full">
-        <h2><span class="card-icon">👕</span> Rosa e sostituzioni</h2>
-        <p class="card-sub">Vincoli sulla composizione della rosa e regole per cambiare la formazione dopo averla salvata.</p>
-
-        <div class="rs-grid">
-          <div class="modifier-block" data-enabled="true">
-            <div class="role-row">
-              <div class="name">Tetto giocatori per squadra reale</div>
-              <label class="switch"><input type="checkbox" class="mod-toggle" checked><span class="track"></span><span class="thumb"></span></label>
-            </div>
-            <div class="modifier-detail">
-              <div class="field">
-                <label>Massimo giocatori dalla stessa squadra di Serie A</label>
-                <div class="credit-input"><input type="number" value="3" min="2" max="5"><span class="unit">giocatori</span></div>
-              </div>
-            </div>
-          </div>
-
-          <div class="modifier-block" data-enabled="true">
-            <div class="role-row">
-              <div class="name">Timeout modifica formazione</div>
-              <label class="switch"><input type="checkbox" class="mod-toggle" checked><span class="track"></span><span class="thumb"></span></label>
-            </div>
-            <div class="modifier-detail">
-              <div class="field">
-                <label>Chiudi le formazioni</label>
-                <div class="credit-input"><input type="number" value="15" min="0" max="60"><span class="unit">minuti prima della 1ª partita</span></div>
-              </div>
-            </div>
-          </div>
-
-          <div class="modifier-block full-span" data-enabled="true">
-            <div class="role-row">
-              <div class="name">Sostituzioni durante la giornata</div>
-              <label class="switch"><input type="checkbox" class="mod-toggle" checked><span class="track"></span><span class="thumb"></span></label>
-            </div>
-            <div class="modifier-detail">
-              <div class="field" style="max-width:16rem;">
-                <label>Numero di sostituzioni ammesse</label>
-                <div class="credit-input"><input type="number" value="5" min="1" max="10"><span class="unit">o illimitate</span></div>
-              </div>
-              <div class="mode-cards cols-3">
-                <div class="mode-card active">
-                  <div class="t">Dinamica</div>
-                  <div class="d">Panchina libera, con cambio modulo se serve</div>
-                </div>
-                <div class="mode-card">
-                  <div class="t">Ibrida</div>
-                  <div class="d">Prima stesso ruolo, poi cambio modulo</div>
-                </div>
-                <div class="mode-card">
-                  <div class="t">Tradizionale</div>
-                  <div class="d">Solo tra giocatori dello stesso ruolo</div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div class="modifier-block full-span" data-enabled="true">
-            <div class="role-row">
-              <div class="name">Lunghezza panchina</div>
-              <label class="switch"><input type="checkbox" class="mod-toggle" checked><span class="track"></span><span class="thumb"></span></label>
-            </div>
-            <div class="modifier-detail">
-              <div class="mode-cards">
-                <div class="mode-card active">
-                  <div class="t">Standard</div>
-                  <div class="d">Un numero fisso di panchinari, in ordine di priorità</div>
-                </div>
-                <div class="mode-card">
-                  <div class="t">Libera</div>
-                  <div class="d">Tutta la rosa non titolare è disponibile in panchina</div>
-                </div>
-              </div>
-              <div class="field" style="max-width:16rem; margin-top:0.8rem;">
-                <label>Numero di panchinari (se standard)</label>
-                <div class="credit-input"><input type="number" value="3" min="1" max="10"><span class="unit">giocatori</span></div>
-              </div>
-            </div>
-          </div>
-
-          <div class="modifier-block full-span" data-enabled="true">
-            <div class="role-row">
-              <div class="name">Switch</div>
-              <label class="switch"><input type="checkbox" class="mod-toggle" checked><span class="track"></span><span class="thumb"></span></label>
-            </div>
-            <div class="modifier-detail">
-              <p class="hint">Abbina in anticipo un titolare a un panchinaro: se il titolare non gioca dal 1' nella sua squadra reale, il panchinaro abbinato lo sostituisce in automatico — non conta come cambio.</p>
-              <div class="mode-cards">
-                <div class="mode-card active">
-                  <div class="t">Basic</div>
-                  <div class="d">Lo switch è possibile solo tra giocatori dello stesso ruolo</div>
-                </div>
-                <div class="mode-card">
-                  <div class="t">Plus</div>
-                  <div class="d">Lo switch è possibile anche tra ruoli diversi, con cambio modulo</div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div class="card full">
-        <h2><span class="card-icon">🛡️</span> Modificatori</h2>
-        <p class="card-sub">Bonus e malus di reparto, calcolati sui voti base (senza bonus/malus) dei titolari. Attiva solo quelli usati nella tua lega.</p>
-
-        <div class="modifier-block" data-enabled="true">
-          <div class="role-row">
-            <div class="name">Modificatore portiere</div>
-            <label class="switch"><input type="checkbox" class="mod-toggle" checked><span class="track"></span><span class="thumb"></span></label>
-          </div>
-          <div class="modifier-detail">
-            <p class="hint">Si attiva quando il portiere prende un voto. Assegna un bonus alla sua squadra o un malus a quella avversaria.</p>
-            <div class="mini-fields">
-              <div class="field"><label>Bonus alla squadra del portiere</label><input type="number" value="1" step="0.5"></div>
-              <div class="field"><label>Malus alla squadra avversaria</label><input type="number" value="0" step="0.5"></div>
-            </div>
-          </div>
-        </div>
-
-        <div class="modifier-block" data-enabled="true">
-          <div class="role-row">
-            <div class="name">Modificatore difesa</div>
-            <label class="switch"><input type="checkbox" class="mod-toggle" checked><span class="track"></span><span class="thumb"></span></label>
-          </div>
-          <div class="modifier-detail">
-            <div class="field" style="max-width:22rem;">
-              <label>Si attiva schierando almeno</label>
-              <div class="credit-input"><input type="number" value="4" min="3" max="5"><span class="unit">difensori in campo</span></div>
-              <span class="hint">Media calcolata sui 3 migliori difensori + portiere</span>
-            </div>
-            <table class="bonus-table" style="margin-top:0.6rem;">
-              <thead><tr><th>Media voti base difesa</th><th class="val">Modificatore</th></tr></thead>
-              <tbody>
-                <tr><td>Meno di 5,5</td><td class="val">−1</td></tr>
-                <tr><td>5,5 – 5,99</td><td class="val">0</td></tr>
-                <tr><td>6 – 6,49</td><td class="val">+1</td></tr>
-                <tr><td>6,5 – 6,99</td><td class="val">+2</td></tr>
-                <tr><td>7 – 7,49</td><td class="val">+3</td></tr>
-                <tr><td>7,5 e oltre</td><td class="val">+4</td></tr>
-              </tbody>
-            </table>
-          </div>
-        </div>
-
-        <div class="modifier-block" data-enabled="true">
-          <div class="role-row">
-            <div class="name">Modificatore centrocampo</div>
-            <label class="switch"><input type="checkbox" class="mod-toggle" checked><span class="track"></span><span class="thumb"></span></label>
-          </div>
-          <div class="modifier-detail">
-            <p class="hint">Confronta il totale dei voti base dei centrocampisti delle due squadre. Chi ne schiera meno di modulo riceve un voto 5 per ogni centrocampista mancante, per pareggiare il conto.</p>
-            <div class="field" style="max-width:16rem;">
-              <label>Punti assegnati per ogni voto di scarto</label>
-              <input type="number" value="1" step="0.5">
-            </div>
-          </div>
-        </div>
-
-        <div class="modifier-block" data-enabled="false">
-          <div class="role-row">
-            <div class="name">Modificatore attacco</div>
-            <label class="switch"><input type="checkbox" class="mod-toggle"><span class="track"></span><span class="thumb"></span></label>
-          </div>
-          <div class="modifier-detail">
-            <p class="hint">Riguarda solo gli attaccanti con voto base ≥ 6 che non segnano, non fanno assist e non sbagliano rigori: ognuno di loro riceve il malus indicato.</p>
-            <div class="field" style="max-width:16rem;">
-              <label>Malus per attaccante "spento"</label>
-              <input type="number" value="-1" step="0.5">
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div class="card full">
-        <h2><span class="card-icon">🧩</span> Moduli disponibili</h2>
-        <p class="card-sub">Seleziona i moduli che potrai schierare durante la stagione — influenzano i valori consigliati per ruolo.</p>
-        <div class="chip-group">
-          <button class="chip active" type="button">3-4-3</button>
-          <button class="chip active" type="button">3-5-2</button>
-          <button class="chip active" type="button">4-3-3</button>
-          <button class="chip active" type="button">4-4-2</button>
-          <button class="chip" type="button">4-5-1</button>
-          <button class="chip" type="button">5-3-2</button>
-          <button class="chip" type="button">5-4-1</button>
-        </div>
+        <div class="weights-panel" id="weights-panel"><!-- generato da script --></div>
       </div>
 
       <div class="card full">
@@ -479,13 +237,13 @@
       const opponents = [...document.querySelectorAll('#opponent-list input')].map(i => i.value.trim()).filter(Boolean);
       const players = rows().map(r => ({
         role: r.dataset.role, team: r.dataset.team, airating: r.dataset.airating,
-        fvm: r.dataset.fvm || 0, valoreAtteso: r.dataset.valoreAtteso === '' ? null : r.dataset.valoreAtteso,
+        fvm: r.dataset.fvm || 0, aiRaw: r.dataset.aiRaw ? JSON.parse(r.dataset.aiRaw) : null,
         name: r.querySelector('.pname').textContent, status: r.dataset.status,
         assignedTeam: r.dataset.assignedTeam || null, price: r.dataset.price || null,
       }));
       localStorage.setItem(ASTA_STORAGE_KEY, JSON.stringify({
         credits: document.getElementById('credits').value,
-        opponents, players, counts,
+        opponents, players, counts, pesi: PESI,
         activeRole, astaMode, callTurnIndex,
         strategyText: document.getElementById('strategy-input').value,
       }));
@@ -494,28 +252,139 @@
   const astaSaved = loadAstaSaved();
 
   // ---------------- previsioni AI: caricate una volta, usate per calcolare il valore atteso di ogni giocatore ----------------
-  // valore atteso = media_fantavoto prevista x presenze previste: una stima dei punti fantacalcio
-  // totali che il giocatore produrra' in stagione, la base su cui si costruisce il prezzo consigliato.
+  // Il "valore atteso" di un giocatore non e' piu' una formula fissa: e' una combinazione
+  // pesata delle statistiche previste, con pesi che decidi tu (sezione "Pesi per ruolo").
+  // Ogni statistica viene prima normalizzata (0-1) rispetto al resto del suo ruolo, cosi'
+  // scale diverse (fantamedia ~6-8, presenze 0-38, gol 0-25...) restano confrontabili.
   const stripAccents = s => s.normalize('NFD').replace(/[̀-ͯ]/g, '');
   const normalizeName = s => stripAccents(String(s || '')).toLowerCase().replace(/\s+/g, ' ').trim();
-  const AI_PREDICTIONS = new Map();
+  const AI_PREDICTIONS = new Map(); // nome normalizzato -> { ruolo, media_fantavoto, presenze, gol_fatti, gol_subiti, assist, ammonizioni, rigori_parati }
+  const ROLE_STAT_RANGES = { P: {}, D: {}, C: {}, A: {} }; // per normalizzare: { statKey: {min,max} } per ruolo
   const aiPredictionsReady = fetch('data/previsioni_2026_27.csv')
     .then(r => { if (!r.ok) throw new Error('previsioni non trovate'); return r.text(); })
     .then(text => {
       const workbook = XLSX.read(text, { type: 'string' });
       const sheet = workbook.Sheets[workbook.SheetNames[0]];
-      XLSX.utils.sheet_to_json(sheet, { defval: '' }).forEach(r => {
-        const mediaFantavoto = parseFloat(r.media_fantavoto) || 0;
-        const presenze = parseFloat(r.presenze) || 0;
+      const righe = XLSX.utils.sheet_to_json(sheet, { defval: '' });
+      righe.forEach(r => {
         AI_PREDICTIONS.set(normalizeName(r.nome), {
-          valoreAtteso: mediaFantavoto * presenze,
-          mediaFantavoto, presenze,
-          golFatti: parseFloat(r.gol_fatti) || 0,
+          ruolo: String(r.ruolo || '').trim(),
+          media_fantavoto: parseFloat(r.media_fantavoto) || 0,
+          presenze: parseFloat(r.presenze) || 0,
+          gol_fatti: parseFloat(r.gol_fatti) || 0,
+          gol_subiti: parseFloat(r.gol_subiti) || 0,
           assist: parseFloat(r.assist) || 0,
+          ammonizioni: parseFloat(r.ammonizioni) || 0,
+          rigori_parati: parseFloat(r.rigori_parati) || 0,
+        });
+      });
+      Object.keys(ROLE_STAT_RANGES).forEach(ruolo => {
+        const pool = righe.filter(r => String(r.ruolo || '').trim() === ruolo);
+        ['media_fantavoto', 'presenze', 'gol_fatti', 'gol_subiti', 'assist', 'ammonizioni', 'rigori_parati'].forEach(key => {
+          const valori = pool.map(r => parseFloat(r[key]) || 0);
+          ROLE_STAT_RANGES[ruolo][key] = { min: Math.min(...valori, 0), max: Math.max(...valori, 0.0001) };
         });
       });
     })
     .catch(() => { /* niente previsioni disponibili: si useranno solo le quotazioni ufficiali come riserva */ });
+
+  // configurazione degli slider: quali statistiche sono regolabili per ciascun ruolo, con
+  // il peso di default (0-100) e se sono un "malus" (meno e' meglio: gol subiti, ammonizioni)
+  const WEIGHT_STATS = {
+    P: [
+      { key: 'media_fantavoto', label: 'Fantamedia', def: 70 },
+      { key: 'presenze', label: 'Presenze', def: 70 },
+      { key: 'gol_subiti', label: 'Solidità (pochi gol subiti)', def: 50, malus: true },
+      { key: 'rigori_parati', label: 'Rigori parati', def: 20 },
+    ],
+    D: [
+      { key: 'media_fantavoto', label: 'Fantamedia', def: 80 },
+      { key: 'presenze', label: 'Presenze', def: 60 },
+      { key: 'gol_fatti', label: 'Gol', def: 25 },
+      { key: 'assist', label: 'Assist', def: 20 },
+      { key: 'ammonizioni', label: 'Disciplina (poche ammonizioni)', def: 15, malus: true },
+    ],
+    C: [
+      { key: 'media_fantavoto', label: 'Fantamedia', def: 75 },
+      { key: 'presenze', label: 'Presenze', def: 55 },
+      { key: 'gol_fatti', label: 'Gol', def: 45 },
+      { key: 'assist', label: 'Assist', def: 45 },
+      { key: 'ammonizioni', label: 'Disciplina (poche ammonizioni)', def: 15, malus: true },
+    ],
+    A: [
+      { key: 'media_fantavoto', label: 'Fantamedia', def: 70 },
+      { key: 'presenze', label: 'Presenze', def: 45 },
+      { key: 'gol_fatti', label: 'Gol', def: 80 },
+      { key: 'assist', label: 'Assist', def: 40 },
+      { key: 'ammonizioni', label: 'Disciplina (poche ammonizioni)', def: 10, malus: true },
+    ],
+  };
+  const PESI_DEFAULT = Object.fromEntries(Object.entries(WEIGHT_STATS).map(([ruolo, stats]) =>
+    [ruolo, Object.fromEntries(stats.map(s => [s.key, s.def]))]));
+
+  // punteggio 0-100 di un giocatore per il suo ruolo, secondo i pesi correnti
+  function calcolaPunteggioAI(pred, ruolo, pesi) {
+    if (!pred) return null;
+    const stats = WEIGHT_STATS[ruolo]; const range = ROLE_STAT_RANGES[ruolo]; const pesiRuolo = pesi[ruolo];
+    if (!stats || !range) return null;
+    let sommaPesata = 0, sommaPesi = 0;
+    stats.forEach(s => {
+      const peso = pesiRuolo[s.key] ?? s.def;
+      if (peso <= 0 || !range[s.key]) return;
+      const { min, max } = range[s.key];
+      let norm = max > min ? (pred[s.key] - min) / (max - min) : 0.5;
+      norm = Math.min(1, Math.max(0, norm));
+      if (s.malus) norm = 1 - norm;
+      sommaPesata += peso * norm;
+      sommaPesi += peso;
+    });
+    return sommaPesi > 0 ? (sommaPesata / sommaPesi) * 100 : 50;
+  }
+
+  // stato dei pesi: parte dai default, sovrascritti dove il browser ne ha di salvati
+  // (fatto chiave per chiave, non sostituendo l'intero oggetto, cosi' se in futuro si
+  // aggiunge una nuova statistica regolabile chi ha gia' salvato un'asta la eredita comunque)
+  const PESI = JSON.parse(JSON.stringify(PESI_DEFAULT));
+  if (astaSaved && astaSaved.pesi) {
+    Object.keys(PESI).forEach(ruolo => Object.assign(PESI[ruolo], astaSaved.pesi[ruolo] || {}));
+  }
+
+  // ricalcola il punteggio AI (e quindi i prezzi) di ogni giocatore gia' importato con i pesi attuali
+  function ricalcolaValoriAttesi() {
+    rows().forEach(r => {
+      const aiRaw = r.dataset.aiRaw ? JSON.parse(r.dataset.aiRaw) : null;
+      const punteggio = aiRaw ? calcolaPunteggioAI(aiRaw, r.dataset.role, PESI) : null;
+      r.dataset.valoreAtteso = punteggio === null ? '' : punteggio;
+    });
+  }
+
+  let weightsRole = 'P';
+  function renderWeightsPanel() {
+    const panel = document.getElementById('weights-panel');
+    panel.innerHTML = WEIGHT_STATS[weightsRole].map(s => `
+      <div class="weight-row">
+        <div class="weight-label">${s.label}${s.malus ? ' <span class="malus-tag">malus</span>' : ''}</div>
+        <input type="range" min="0" max="100" value="${PESI[weightsRole][s.key]}" data-stat="${s.key}" class="weight-slider">
+        <span class="weight-value">${PESI[weightsRole][s.key]}</span>
+      </div>`).join('');
+  }
+  document.getElementById('weights-role-picker').addEventListener('click', (e) => {
+    const c = e.target.closest('.chip'); if (!c) return;
+    document.querySelectorAll('#weights-role-picker .chip').forEach(x => x.classList.remove('active'));
+    c.classList.add('active');
+    weightsRole = c.dataset.role;
+    renderWeightsPanel();
+  });
+  document.getElementById('weights-panel').addEventListener('input', (e) => {
+    const slider = e.target.closest('.weight-slider'); if (!slider) return;
+    PESI[weightsRole][slider.dataset.stat] = parseInt(slider.value, 10);
+    slider.nextElementSibling.textContent = slider.value;
+    ricalcolaValoriAttesi();
+    calcolaPrezziConsigliati();
+    renderTurnBanner();
+    persistAsta();
+  });
+  renderWeightsPanel();
 
   // stepper tra le due fasi
   document.querySelectorAll('.stepper button').forEach(btn => {
@@ -577,32 +446,6 @@
     if (astaSaved.credits) document.getElementById('credits').value = astaSaved.credits;
     (astaSaved.opponents || []).forEach(name => { if (name !== 'La mia squadra') addOpponentRow(name, false); });
   }
-
-  // chip moduli (multi-selezione)
-  document.querySelectorAll('#setup .chip-group:not(#market-type-picker) .chip').forEach(c => c.addEventListener('click', () => c.classList.toggle('active')));
-
-  // chip tipo di mercato (selezione singola)
-  document.getElementById('market-type-picker').addEventListener('click', (e) => {
-    const c = e.target.closest('.chip'); if (!c) return;
-    document.querySelectorAll('#market-type-picker .chip').forEach(x => x.classList.remove('active'));
-    c.classList.add('active');
-  });
-
-  // mode-card: singola selezione all'interno dello stesso gruppo
-  document.querySelectorAll('.mode-cards').forEach(group => {
-    group.addEventListener('click', (e) => {
-      const c = e.target.closest('.mode-card'); if (!c) return;
-      group.querySelectorAll('.mode-card').forEach(x => x.classList.remove('active'));
-      c.classList.add('active');
-    });
-  });
-
-  // attiva/disattiva i blocchi dei modificatori
-  document.querySelectorAll('.mod-toggle').forEach(t => {
-    t.addEventListener('change', () => {
-      t.closest('.modifier-block').dataset.enabled = t.checked;
-    });
-  });
 
   // ---------------- listone: filtri, ordinamento, rose live ----------------
   const getTeamBudget = () => parseInt(document.getElementById('credits').value, 10) || 500;
@@ -931,9 +774,12 @@
       const cell = status === 'assegnato'
         ? assignedCellHTML(p.assignedTeam, p.price)
         : `<div class="assign-inline">${buildAssignSelect()}<input type="number" placeholder="Cred."><button type="button" class="assign-btn">✓</button></div>`;
-      const valoreAttesoAttr = (p.valoreAtteso === null || p.valoreAtteso === undefined) ? '' : p.valoreAtteso;
+      // il punteggio si ricalcola sempre qui con i pesi CORRENTI, mai da un valore salvato
+      const punteggio = p.aiRaw ? calcolaPunteggioAI(p.aiRaw, p.role, PESI) : null;
+      const valoreAttesoAttr = (punteggio === null || punteggio === undefined) ? '' : punteggio;
+      const aiRawAttr = p.aiRaw ? JSON.stringify(p.aiRaw).replace(/"/g, '&quot;') : '';
       return `
-      <tr data-role="${p.role}" data-team="${p.team}" data-airating="${p.airating}" data-fvm="${p.fvm || 0}" data-valore-atteso="${valoreAttesoAttr}" data-status="${status}"${extraAttrs}>
+      <tr data-role="${p.role}" data-team="${p.team}" data-airating="${p.airating}" data-fvm="${p.fvm || 0}" data-valore-atteso="${valoreAttesoAttr}" data-ai-raw="${aiRawAttr}" data-status="${status}"${extraAttrs}>
         <td><span class="role-pill ${p.role}">${p.role}</span></td>
         <td><div class="pname">${p.name}</div><div class="pteam">${p.team}</div></td>
         <td class="ai-val">${aiValCellHTML(p.airating, valoreAttesoAttr)}</td>
@@ -959,7 +805,7 @@
   // abbinato alle previsioni; altrimenti un avviso che si sta usando solo l'FVM ufficiale.
   function aiValCellHTML(prezzo, valoreAtteso) {
     const sub = valoreAtteso === '' ? '<span class="ai-nomatch" title="Nessun abbinamento con le previsioni AI: prezzo stimato solo dall\'FVM ufficiale">n/d AI</span>'
-      : `${(+valoreAtteso).toFixed(0)} pt previsti`;
+      : `punteggio AI ${(+valoreAtteso).toFixed(0)}/100`;
     return `<div class="ai-price">${prezzo} cr.</div><div class="ai-sub">${sub}</div>`;
   }
 
@@ -1007,14 +853,15 @@
             const fvm = parseFloat(row[colFor.fvm]) || 0;
             const qtA = parseFloat(row[colFor.qta]) || 0;
             const name = String(row[colFor.nome]).trim();
+            const role = String(row[colFor.r]).trim().toUpperCase();
             const ai = AI_PREDICTIONS.get(normalizeName(name));
             return {
-              role: String(row[colFor.r]).trim().toUpperCase(),
+              role,
               roleMantra: colFor.rm ? String(row[colFor.rm]).trim() : '',
               name,
               team: String(row[colFor.squadra]).trim(),
               fvm: fvm || qtA || 0,
-              valoreAtteso: ai ? ai.valoreAtteso : null,
+              aiRaw: ai || null, // il punteggio si calcola in renderImportedListone, con i pesi correnti
               airating: 0, // calcolato subito dopo da calcolaPrezziConsigliati()
             };
           })

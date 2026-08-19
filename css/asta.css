@@ -29,9 +29,33 @@ main.stage { padding: 1.4rem 0 2.5rem; }
 .page-head p { color: var(--ink-soft); margin-top: 0.4rem; max-width: 40rem; font-size: 0.95rem; }
 
 /* ============ fase 1: impostazione ============ */
+/* .setup-grid: griglia di card a due colonne semplice, usata da formazione.html
+   ("Nuova lega") - asta.html usa invece .setup-shell qui sotto (sidebar + pannelli) */
 .setup-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem; align-items: start; }
 @media (max-width: 60rem) { .setup-grid { grid-template-columns: 1fr; } }
 .setup-grid .full { grid-column: 1 / -1; }
+
+/* ---------------- setup: sidebar di sezioni + pannello a destra (solo asta.html) ---------------- */
+.setup-shell { display: grid; grid-template-columns: 15rem 1fr; gap: 1.5rem; align-items: start; }
+@media (max-width: 56rem) { .setup-shell { grid-template-columns: 1fr; } }
+
+.setup-nav { display: grid; gap: 0.3rem; position: sticky; top: 5.2rem; }
+@media (max-width: 56rem) { .setup-nav { position: static; grid-auto-flow: column; overflow-x: auto; padding-bottom: 0.3rem; } }
+.setup-nav-item {
+  display: flex; align-items: center; gap: 0.6rem; text-align: left; border: 1px solid transparent;
+  background: none; border-radius: 10px; padding: 0.65rem 0.8rem; font-size: 0.88rem; font-weight: 600;
+  color: var(--ink-soft); cursor: pointer; white-space: nowrap;
+}
+.setup-nav-item .card-icon { width: 1.7rem; height: 1.7rem; font-size: 0.85rem; }
+.setup-nav-item:hover:not(.active) { background: var(--paper-raised); border-color: var(--line); }
+.setup-nav-item.active { background: var(--pitch-deep); color: var(--pitch-tint); }
+.setup-nav-item.active .card-icon { background: rgba(255,255,255,0.18); }
+
+.setup-panels { min-width: 0; }
+.setup-panel { display: none; grid-template-columns: 1fr 1fr; gap: 1.25rem; align-items: start; }
+.setup-panel.active { display: grid; }
+@media (max-width: 60rem) { .setup-panel { grid-template-columns: 1fr; } }
+.setup-panel .full { grid-column: 1 / -1; }
 
 .card { background: var(--paper-raised); border: 1px solid var(--line); border-radius: 16px; padding: 1.4rem; }
 .card h2 { font-size: 1.02rem; display: flex; align-items: center; gap: 0.5rem; }

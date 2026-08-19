@@ -22,115 +22,135 @@
       <p>Configura regole, avversari e composizione delle rose una volta sola: FantaAI userà questi parametri per calcolare i valori consigliati durante l'asta.</p>
     </div>
 
-    <div class="setup-grid">
+    <div class="setup-shell">
+      <nav class="setup-nav" id="setup-nav" aria-label="Sezioni impostazione asta">
+        <button class="setup-nav-item active" type="button" data-section="budget"><span class="card-icon">💰</span> Budget e rose</button>
+        <button class="setup-nav-item" type="button" data-section="avversari"><span class="card-icon">🏆</span> Avversari</button>
+        <button class="setup-nav-item" type="button" data-section="svolgimento"><span class="card-icon">📢</span> Svolgimento dell'asta</button>
+        <button class="setup-nav-item" type="button" data-section="pesi"><span class="card-icon">⚖️</span> Pesi per ruolo</button>
+        <button class="setup-nav-item" type="button" data-section="listone"><span class="card-icon">📄</span> Importa il listone</button>
+      </nav>
 
-      <div class="card">
-        <h2><span class="card-icon">💰</span> Crediti a disposizione</h2>
-        <p class="card-sub">Il budget totale che ogni squadra ha per fare l'asta.</p>
-        <div class="field">
-          <label for="credits">Crediti per squadra</label>
-          <div class="credit-input">
-            <input type="number" id="credits" value="500" min="1">
-            <span class="unit">crediti</span>
+      <div class="setup-panels">
+
+        <div class="setup-panel active" data-section="budget">
+          <div class="card">
+            <h2><span class="card-icon">💰</span> Crediti a disposizione</h2>
+            <p class="card-sub">Il budget totale che ogni squadra ha per fare l'asta.</p>
+            <div class="field">
+              <label for="credits">Crediti per squadra</label>
+              <div class="credit-input">
+                <input type="number" id="credits" value="500" min="1">
+                <span class="unit">crediti</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="card">
+            <h2><span class="card-icon">👥</span> Composizione rosa</h2>
+            <p class="card-sub">Quanti giocatori per ruolo dovrà avere ogni squadra.</p>
+            <div class="role-rows">
+              <div class="role-row">
+                <div class="name"><span class="swatch">P</span> Portieri</div>
+                <div class="stepper-mini"><button type="button" data-step="-1" data-role="p">−</button><span class="count" id="count-p">3</span><button type="button" data-step="1" data-role="p">+</button></div>
+              </div>
+              <div class="role-row">
+                <div class="name"><span class="swatch">D</span> Difensori</div>
+                <div class="stepper-mini"><button type="button" data-step="-1" data-role="d">−</button><span class="count" id="count-d">8</span><button type="button" data-step="1" data-role="d">+</button></div>
+              </div>
+              <div class="role-row">
+                <div class="name"><span class="swatch">C</span> Centrocampisti</div>
+                <div class="stepper-mini"><button type="button" data-step="-1" data-role="c">−</button><span class="count" id="count-c">8</span><button type="button" data-step="1" data-role="c">+</button></div>
+              </div>
+              <div class="role-row">
+                <div class="name"><span class="swatch">A</span> Attaccanti</div>
+                <div class="stepper-mini"><button type="button" data-step="-1" data-role="a">−</button><span class="count" id="count-a">6</span><button type="button" data-step="1" data-role="a">+</button></div>
+              </div>
+            </div>
+            <div class="role-total">Totale rosa: <b id="role-total">25</b> giocatori</div>
           </div>
         </div>
-      </div>
 
-      <div class="card">
-        <h2><span class="card-icon">👥</span> Composizione rosa</h2>
-        <p class="card-sub">Quanti giocatori per ruolo dovrà avere ogni squadra.</p>
-        <div class="role-rows">
-          <div class="role-row">
-            <div class="name"><span class="swatch">P</span> Portieri</div>
-            <div class="stepper-mini"><button type="button" data-step="-1" data-role="p">−</button><span class="count" id="count-p">3</span><button type="button" data-step="1" data-role="p">+</button></div>
-          </div>
-          <div class="role-row">
-            <div class="name"><span class="swatch">D</span> Difensori</div>
-            <div class="stepper-mini"><button type="button" data-step="-1" data-role="d">−</button><span class="count" id="count-d">8</span><button type="button" data-step="1" data-role="d">+</button></div>
-          </div>
-          <div class="role-row">
-            <div class="name"><span class="swatch">C</span> Centrocampisti</div>
-            <div class="stepper-mini"><button type="button" data-step="-1" data-role="c">−</button><span class="count" id="count-c">8</span><button type="button" data-step="1" data-role="c">+</button></div>
-          </div>
-          <div class="role-row">
-            <div class="name"><span class="swatch">A</span> Attaccanti</div>
-            <div class="stepper-mini"><button type="button" data-step="-1" data-role="a">−</button><span class="count" id="count-a">6</span><button type="button" data-step="1" data-role="a">+</button></div>
+        <div class="setup-panel" data-section="avversari">
+          <div class="card full">
+            <h2><span class="card-icon">🏆</span> Avversari</h2>
+            <p class="card-sub">Aggiungi le squadre della tua lega — FantaAI seguirà i loro acquisti in tempo reale.</p>
+            <div class="opponent-list" id="opponent-list">
+              <div class="opponent-row"><span class="avatar">TU</span><input type="text" value="La mia squadra" disabled></div>
+            </div>
+            <button class="add-link" type="button" id="add-opponent">+ Aggiungi avversario</button>
           </div>
         </div>
-        <div class="role-total">Totale rosa: <b id="role-total">25</b> giocatori</div>
-      </div>
 
-      <div class="card">
-        <h2><span class="card-icon">🏆</span> Avversari</h2>
-        <p class="card-sub">Aggiungi le squadre della tua lega — FantaAI seguirà i loro acquisti in tempo reale.</p>
-        <div class="opponent-list" id="opponent-list">
-          <div class="opponent-row"><span class="avatar">TU</span><input type="text" value="La mia squadra" disabled></div>
-        </div>
-        <button class="add-link" type="button" id="add-opponent">+ Aggiungi avversario</button>
-      </div>
-
-      <div class="card">
-        <h2><span class="card-icon">📢</span> Svolgimento dell'asta</h2>
-        <p class="card-sub">L'asta si fa un ruolo alla volta (prima tutti i portieri, poi i difensori, ecc.) — scegli solo come si sceglie chi mettere all'incanto dentro ogni ruolo.</p>
-        <div class="chip-group" id="asta-mode-picker">
-          <button class="chip active" type="button" data-mode="chiamata">A chiamata</button>
-          <button class="chip" type="button" data-mode="ordine">In ordine alfabetico</button>
-        </div>
-        <p class="hint" id="asta-mode-hint" style="margin-top:0.6rem;">A turno, ogni squadra chiama un giocatore libero del ruolo in corso — FantaAI segna il turno e passa alla squadra successiva a ogni assegnazione.</p>
-      </div>
-
-      <div class="card full">
-        <h2><span class="card-icon">⚖️</span> Pesi per ruolo</h2>
-        <p class="card-sub">Decidi tu quanto contano le statistiche nel prezzo consigliato — puoi dare più peso alla fantamedia, alle presenze, poco ai gol, e cambiare il bilanciamento in modo diverso per ogni ruolo.</p>
-
-        <h3 class="subhead">Percentuale di budget per ruolo</h3>
-        <p class="card-sub">Quanto del budget totale di lega destinare a ciascun reparto — i prezzi consigliati di ogni ruolo restano dentro questa fetta.</p>
-        <div class="weights-panel" id="budget-weights-panel"><!-- generato da script --></div>
-        <div class="budget-total" id="budget-total"><!-- generato da script --></div>
-
-        <h3 class="subhead" style="margin-top:1.4rem;">Statistiche per ruolo</h3>
-        <div class="chip-group" id="weights-role-picker">
-          <button class="chip active" type="button" data-role="P">Portieri</button>
-          <button class="chip" type="button" data-role="D">Difensori</button>
-          <button class="chip" type="button" data-role="C">Centrocampisti</button>
-          <button class="chip" type="button" data-role="A">Attaccanti</button>
-        </div>
-        <div class="weights-panel" id="weights-panel"><!-- generato da script --></div>
-      </div>
-
-      <div class="card full">
-        <h2><span class="card-icon">📄</span> Importa il listone</h2>
-        <p class="card-sub">Carica il file ufficiale (Fantacalcio.it, Fantagazzetta e simili): FantaAI lo legge automaticamente e lo usa come base per quotazioni e ruoli.</p>
-
-        <div class="dropzone" id="dropzone">
-          <div class="dz-icon">📥</div>
-          <div class="dz-title">Trascina qui il file del listone</div>
-          <div class="dz-sub">Formato .xlsx, .xls o .csv — oppure scegli un file dal computer</div>
-          <button class="btn btn-browse" type="button" id="browse-btn">Sfoglia file</button>
-          <input type="file" id="listone-file" accept=".xlsx,.xls,.csv" hidden>
+        <div class="setup-panel" data-section="svolgimento">
+          <div class="card full">
+            <h2><span class="card-icon">📢</span> Svolgimento dell'asta</h2>
+            <p class="card-sub">L'asta si fa un ruolo alla volta (prima tutti i portieri, poi i difensori, ecc.) — scegli solo come si sceglie chi mettere all'incanto dentro ogni ruolo.</p>
+            <div class="chip-group" id="asta-mode-picker">
+              <button class="chip active" type="button" data-mode="chiamata">A chiamata</button>
+              <button class="chip" type="button" data-mode="ordine">In ordine alfabetico</button>
+            </div>
+            <p class="hint" id="asta-mode-hint" style="margin-top:0.6rem;">A turno, ogni squadra chiama un giocatore libero del ruolo in corso — FantaAI segna il turno e passa alla squadra successiva a ogni assegnazione.</p>
+          </div>
         </div>
 
-        <div class="import-status" id="import-status" hidden></div>
+        <div class="setup-panel" data-section="pesi">
+          <div class="card full">
+            <h2><span class="card-icon">⚖️</span> Pesi per ruolo</h2>
+            <p class="card-sub">Decidi tu quanto contano le statistiche nel prezzo consigliato — puoi dare più peso alla fantamedia, alle presenze, poco ai gol, e cambiare il bilanciamento in modo diverso per ogni ruolo.</p>
 
-        <details class="format-help">
-          <summary>Quali colonne riconosce FantaAI?</summary>
-          <p class="hint">Sono le colonne standard dei listoni ufficiali — basta che il file le contenga (in qualsiasi ordine, maiuscole/minuscole non contano):</p>
-          <table class="bonus-table">
-            <thead><tr><th>Colonna</th><th>Significato</th></tr></thead>
-            <tbody>
-              <tr><td>Id</td><td>Identificativo del giocatore</td></tr>
-              <tr><td>R</td><td>Ruolo Classic (P, D, C, A) — obbligatoria</td></tr>
-              <tr><td>RM</td><td>Ruolo/i Mantra (es. Dc, W, Pc)</td></tr>
-              <tr><td>Nome</td><td>Nome del giocatore — obbligatoria</td></tr>
-              <tr><td>Squadra</td><td>Squadra di Serie A — obbligatoria</td></tr>
-              <tr><td>Qt.A / Qt.I / Diff.</td><td>Quotazione attuale, iniziale e differenza (Classic)</td></tr>
-              <tr><td>Qt.A M / Qt.I M / Diff.M</td><td>Le stesse quotazioni in modalità Mantra</td></tr>
-              <tr><td>FVM / FVM M</td><td>FantaValore di Mercato — usato solo come riferimento per i pochi giocatori senza previsione AI abbinata</td></tr>
-            </tbody>
-          </table>
-        </details>
+            <h3 class="subhead">Percentuale di budget per ruolo</h3>
+            <p class="card-sub">Quanto del budget totale di lega destinare a ciascun reparto — i prezzi consigliati di ogni ruolo restano dentro questa fetta.</p>
+            <div class="weights-panel" id="budget-weights-panel"><!-- generato da script --></div>
+            <div class="budget-total" id="budget-total"><!-- generato da script --></div>
+
+            <h3 class="subhead" style="margin-top:1.4rem;">Statistiche per ruolo</h3>
+            <div class="chip-group" id="weights-role-picker">
+              <button class="chip active" type="button" data-role="P">Portieri</button>
+              <button class="chip" type="button" data-role="D">Difensori</button>
+              <button class="chip" type="button" data-role="C">Centrocampisti</button>
+              <button class="chip" type="button" data-role="A">Attaccanti</button>
+            </div>
+            <div class="weights-panel" id="weights-panel"><!-- generato da script --></div>
+          </div>
+        </div>
+
+        <div class="setup-panel" data-section="listone">
+          <div class="card full">
+            <h2><span class="card-icon">📄</span> Importa il listone</h2>
+            <p class="card-sub">Carica il file ufficiale (Fantacalcio.it, Fantagazzetta e simili): FantaAI lo legge automaticamente e lo usa come base per quotazioni e ruoli.</p>
+
+            <div class="dropzone" id="dropzone">
+              <div class="dz-icon">📥</div>
+              <div class="dz-title">Trascina qui il file del listone</div>
+              <div class="dz-sub">Formato .xlsx, .xls o .csv — oppure scegli un file dal computer</div>
+              <button class="btn btn-browse" type="button" id="browse-btn">Sfoglia file</button>
+              <input type="file" id="listone-file" accept=".xlsx,.xls,.csv" hidden>
+            </div>
+
+            <div class="import-status" id="import-status" hidden></div>
+
+            <details class="format-help">
+              <summary>Quali colonne riconosce FantaAI?</summary>
+              <p class="hint">Sono le colonne standard dei listoni ufficiali — basta che il file le contenga (in qualsiasi ordine, maiuscole/minuscole non contano):</p>
+              <table class="bonus-table">
+                <thead><tr><th>Colonna</th><th>Significato</th></tr></thead>
+                <tbody>
+                  <tr><td>Id</td><td>Identificativo del giocatore</td></tr>
+                  <tr><td>R</td><td>Ruolo Classic (P, D, C, A) — obbligatoria</td></tr>
+                  <tr><td>RM</td><td>Ruolo/i Mantra (es. Dc, W, Pc)</td></tr>
+                  <tr><td>Nome</td><td>Nome del giocatore — obbligatoria</td></tr>
+                  <tr><td>Squadra</td><td>Squadra di Serie A — obbligatoria</td></tr>
+                  <tr><td>Qt.A / Qt.I / Diff.</td><td>Quotazione attuale, iniziale e differenza (Classic)</td></tr>
+                  <tr><td>Qt.A M / Qt.I M / Diff.M</td><td>Le stesse quotazioni in modalità Mantra</td></tr>
+                  <tr><td>FVM / FVM M</td><td>FantaValore di Mercato — usato solo come riferimento per i pochi giocatori senza previsione AI abbinata</td></tr>
+                </tbody>
+              </table>
+            </details>
+          </div>
+        </div>
+
       </div>
-
     </div>
 
     <div class="setup-footer">
@@ -424,6 +444,15 @@
     persistAsta();
   });
   renderWeightsPanel();
+
+  // navigazione a sezioni della schermata di setup: un click sulla sidebar mostra
+  // solo il pannello corrispondente a destra, invece di avere tutte le card insieme
+  document.getElementById('setup-nav').addEventListener('click', (e) => {
+    const btn = e.target.closest('.setup-nav-item'); if (!btn) return;
+    document.querySelectorAll('.setup-nav-item').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    document.querySelectorAll('.setup-panel').forEach(p => p.classList.toggle('active', p.dataset.section === btn.dataset.section));
+  });
 
   // stepper tra le due fasi
   document.querySelectorAll('.stepper button').forEach(btn => {

@@ -519,8 +519,10 @@
   // ---------------- fasi dell'asta: un ruolo alla volta, come nella realta' ----------------
   const ROLE_ORDER = ['P', 'D', 'C', 'A'];
   let activeRole = (astaSaved && astaSaved.activeRole) || 'P';
+  let nextPickIndex = 0; // posizione in classifica mostrata nella card "prossimo acquisto consigliato"
   function setPhase(role) {
     activeRole = role;
+    nextPickIndex = 0;
     document.querySelectorAll('#phase-steps .phase-step').forEach(x => x.classList.toggle('active', x.dataset.role === role));
     applyFilters();
     refreshStats();
@@ -809,13 +811,14 @@
     document.addEventListener('keydown', function onEsc(e) { if (e.key === 'Escape') { close(); document.removeEventListener('keydown', onEsc); } });
   }
 
-  // il giocatore libero col prezzo consigliato piu' alto - scoperto sulla fase attiva
-  // (un ruolo alla volta) se ce n'e' una, altrimenti su tutti i liberi
+  // i giocatori liberi ordinati dal prezzo consigliato piu' alto al piu' basso -
+  // scoperti sulla fase attiva (un ruolo alla volta) se ce n'e' una, altrimenti su tutti
   function bestFreePlayer() {
     const all = rows();
     const liberiTutti = all.filter(r => r.dataset.status !== 'assegnato');
     const liberi = activeRole === 'ALL' ? liberiTutti : liberiTutti.filter(r => r.dataset.role === activeRole);
-    return { liberi, top: liberi.slice().sort((a, b) => parseFloat(b.dataset.airating) - parseFloat(a.dataset.airating))[0] };
+    const ordinati = liberi.slice().sort((a, b) => parseFloat(b.dataset.airating) - parseFloat(a.dataset.airating));
+    return { liberi, ordinati, top: ordinati[0] };
   }
 
   function refreshStats() {
@@ -833,28 +836,38 @@
     renderNextPick();
   }
 
-  // card "prossimo acquisto consigliato": il miglior affare ancora libero, con un
-  // tasto per saltare subito a quella riga della tabella - una segnalazione, non un
-  // obbligo, cosi' si puo' scegliere liberamente chi prendere davvero
+  // card "prossimo acquisto consigliato": il miglior affare ancora libero, con le
+  // frecce per scorrere anche i successivi in ordine di importanza (e tornare
+  // indietro) - una classifica da consultare liberamente, non un obbligo
   function renderNextPick() {
     const body = document.getElementById('next-pick-body');
-    const { liberi, top } = bestFreePlayer();
+    const { ordinati } = bestFreePlayer();
     if (!rows().length) {
       body.innerHTML = '<p class="hint">Importa il listone per vedere qui il prossimo acquisto consigliato.</p>';
-    } else if (!top) {
-      body.innerHTML = '<p class="hint">Tutti i giocatori di questa fase sono già stati assegnati.</p>';
-    } else {
-      const nome = top.querySelector('.pname').textContent;
-      body.innerHTML = `
-        <div class="next-pick-player">
-          <span class="role-pill ${top.dataset.role}">${top.dataset.role}</span>
-          <div><div class="pname">${nome}</div><div class="pteam">${top.dataset.team}</div></div>
-        </div>
-        <div class="next-pick-price">${top.dataset.airating} <span>cr.</span></div>
-        <p class="hint">${liberi.length} giocatori ancora liberi in questa vista</p>
-        <button type="button" class="btn" id="next-pick-goto">Vai al giocatore ↓</button>`;
-      document.getElementById('next-pick-goto').addEventListener('click', () => scrollToPlayerRow(nome));
+      return;
     }
+    if (!ordinati.length) {
+      body.innerHTML = '<p class="hint">Tutti i giocatori di questa fase sono già stati assegnati.</p>';
+      return;
+    }
+    nextPickIndex = Math.min(Math.max(nextPickIndex, 0), ordinati.length - 1);
+    const player = ordinati[nextPickIndex];
+    const nome = player.querySelector('.pname').textContent;
+    body.innerHTML = `
+      <div class="next-pick-nav">
+        <button type="button" class="np-arrow" id="np-prev" ${nextPickIndex === 0 ? 'disabled' : ''} aria-label="Affare precedente">‹</button>
+        <span class="np-rank">${nextPickIndex + 1} di ${ordinati.length}</span>
+        <button type="button" class="np-arrow" id="np-next" ${nextPickIndex === ordinati.length - 1 ? 'disabled' : ''} aria-label="Affare successivo">›</button>
+      </div>
+      <div class="next-pick-player">
+        <span class="role-pill ${player.dataset.role}">${player.dataset.role}</span>
+        <div><div class="pname">${nome}</div><div class="pteam">${player.dataset.team}</div></div>
+      </div>
+      <div class="next-pick-price">${player.dataset.airating} <span>cr.</span></div>
+      <button type="button" class="btn" id="next-pick-goto">Vai al giocatore ↓</button>`;
+    document.getElementById('np-prev').addEventListener('click', () => { nextPickIndex--; renderNextPick(); });
+    document.getElementById('np-next').addEventListener('click', () => { nextPickIndex++; renderNextPick(); });
+    document.getElementById('next-pick-goto').addEventListener('click', () => scrollToPlayerRow(nome));
   }
 
   // scorre la tabella fino alla riga del giocatore e la fa lampeggiare per farla notare

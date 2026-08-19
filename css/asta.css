@@ -222,6 +222,13 @@ input[type="text"], input[type="number"], select {
 
 .side-col { display: grid; gap: 1rem; position: sticky; top: 5.2rem; }
 .next-pick-card { border: 1px solid color-mix(in srgb, var(--pitch-deep) 25%, var(--line)); background: linear-gradient(160deg, var(--pitch-tint), var(--paper-raised) 60%); }
+.next-pick-nav { display: flex; align-items: center; justify-content: center; gap: 0.9rem; margin-bottom: 0.6rem; }
+.np-arrow { width: 1.8rem; height: 1.8rem; border-radius: 50%; border: 1px solid var(--line); background: var(--paper-raised); color: var(--ink); font-size: 1.05rem; line-height: 1; cursor: pointer; display: grid; place-items: center; }
+.np-arrow:hover:not(:disabled) { border-color: var(--pitch-deep); color: var(--pitch-deep); }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .np-arrow:hover:not(:disabled) { color: var(--pitch-bright); } }
+:root[data-theme="dark"] .np-arrow:hover:not(:disabled) { color: var(--pitch-bright); }
+.np-arrow:disabled { opacity: 0.3; cursor: default; }
+.np-rank { font-size: 0.76rem; color: var(--ink-faint); font-variant-numeric: tabular-nums; min-width: 4.5rem; text-align: center; }
 .next-pick-player { display: flex; align-items: center; gap: 0.6rem; }
 .next-pick-player .pname { font-weight: 700; }
 .next-pick-player .pteam { font-size: 0.76rem; color: var(--ink-faint); }

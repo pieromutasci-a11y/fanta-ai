@@ -198,9 +198,12 @@
       </div>
 
       <div class="side-col">
-        <div class="insight-card">
-          <div class="k">Aggiornamento AI</div>
-          <p id="insight-text">Importa il listone per vedere qui il prossimo obiettivo consigliato.</p>
+        <div class="panel-card next-pick-card">
+          <div class="panel-card-head">
+            <h3>Prossimo acquisto consigliato</h3>
+            <span class="hint">Il miglior affare ancora libero</span>
+          </div>
+          <div id="next-pick-body"><!-- generato da script --></div>
         </div>
 
         <div class="panel-card">
@@ -214,6 +217,8 @@
     </div>
   </section>
 </main>
+
+<div id="player-modal-root"></div>
 
 <footer class="site wrap">Il prezzo consigliato si ricalcola in tempo reale: si basa sul valore atteso di ogni giocatore (previsto dai modelli AI di FantaAI) confrontato con il livello di rimpiazzo del suo ruolo, e sul budget ancora disponibile in lega.</footer>
 
@@ -316,6 +321,12 @@
   };
   const PESI_DEFAULT = Object.fromEntries(Object.entries(WEIGHT_STATS).map(([ruolo, stats]) =>
     [ruolo, Object.fromEntries(stats.map(s => [s.key, s.def]))]));
+
+  // etichette in italiano per ogni statistica prevista, usate nel popup di dettaglio del giocatore
+  const STAT_LABELS_ALL = {
+    media_fantavoto: 'Fantamedia', presenze: 'Presenze', gol_fatti: 'Gol',
+    gol_subiti: 'Gol subiti', assist: 'Assist', ammonizioni: 'Ammonizioni', rigori_parati: 'Rigori parati',
+  };
 
   // punteggio 0-100 di un giocatore per il suo ruolo, secondo i pesi correnti
   function calcolaPunteggioAI(pred, ruolo, pesi) {
@@ -512,6 +523,7 @@
     activeRole = role;
     document.querySelectorAll('#phase-steps .phase-step').forEach(x => x.classList.toggle('active', x.dataset.role === role));
     applyFilters();
+    refreshStats();
     renderTurnBanner();
     persistAsta();
   }
@@ -752,7 +764,59 @@
       persistAsta();
       return;
     }
+    // clic sul nome/ruolo/prezzo (non sui controlli di assegnazione): apri il dettaglio
+    const infoTarget = e.target.closest('td');
+    if (infoTarget && !infoTarget.querySelector('select, input, button')) {
+      showPlayerModal(e.target.closest('tr'));
+    }
   });
+
+  // ---------------- popup di dettaglio giocatore ----------------
+  function showPlayerModal(row) {
+    if (!row) return;
+    const nome = row.querySelector('.pname').textContent;
+    const ruolo = row.dataset.role;
+    const aiRaw = row.dataset.aiRaw ? JSON.parse(row.dataset.aiRaw) : null;
+    const punteggio = row.dataset.valoreAtteso;
+    const statiRighe = aiRaw
+      ? Object.entries(STAT_LABELS_ALL).filter(([k]) => k in aiRaw)
+        .map(([k, label]) => `<div class="pm-stat-row"><span>${label}</span><b>${aiRaw[k].toFixed(2)}</b></div>`).join('')
+      : '<p class="hint">Nessuna previsione AI abbinata a questo giocatore: il prezzo si basa solo sull\'FVM ufficiale.</p>';
+
+    const root = document.getElementById('player-modal-root');
+    root.innerHTML = `
+      <div class="modal-backdrop" id="pm-backdrop">
+        <div class="player-modal" role="dialog" aria-modal="true" aria-label="Dettaglio ${nome}">
+          <div class="pm-head">
+            <div>
+              <span class="role-pill ${ruolo}">${ruolo}</span>
+              <span class="pm-name">${nome}</span>
+              <div class="pm-team">${row.dataset.team}</div>
+            </div>
+            <button type="button" class="pm-close" id="pm-close" aria-label="Chiudi">✕</button>
+          </div>
+          <div class="pm-price-block">
+            <div class="pm-price">${row.dataset.airating} <span>cr.</span></div>
+            <div class="hint">Prezzo consigliato ora, in base a budget e giocatori ancora liberi</div>
+          </div>
+          ${punteggio !== '' ? `<div class="hint" style="margin-top:0.5rem;">Punteggio AI: <b>${(+punteggio).toFixed(0)}/100</b></div>` : ''}
+          <div class="pm-stats">${statiRighe}</div>
+        </div>
+      </div>`;
+    const close = () => { root.innerHTML = ''; };
+    document.getElementById('pm-close').addEventListener('click', close);
+    document.getElementById('pm-backdrop').addEventListener('click', (e) => { if (e.target.id === 'pm-backdrop') close(); });
+    document.addEventListener('keydown', function onEsc(e) { if (e.key === 'Escape') { close(); document.removeEventListener('keydown', onEsc); } });
+  }
+
+  // il giocatore libero col prezzo consigliato piu' alto - scoperto sulla fase attiva
+  // (un ruolo alla volta) se ce n'e' una, altrimenti su tutti i liberi
+  function bestFreePlayer() {
+    const all = rows();
+    const liberiTutti = all.filter(r => r.dataset.status !== 'assegnato');
+    const liberi = activeRole === 'ALL' ? liberiTutti : liberiTutti.filter(r => r.dataset.role === activeRole);
+    return { liberi, top: liberi.slice().sort((a, b) => parseFloat(b.dataset.airating) - parseFloat(a.dataset.airating))[0] };
+  }
 
   function refreshStats() {
     const all = rows();
@@ -763,21 +827,43 @@
     document.getElementById('stat-assigned').innerHTML = assigned.length + '<span style="font-size:0.9rem;color:var(--ink-faint);"> / ' + all.length + '</span>';
     document.getElementById('stat-free').textContent = all.length - assigned.length;
 
-    // il "prossimo obiettivo" e l'insight seguono la fase in corso (se una fase e' attiva),
-    // cosi' restano coerenti con quello che si vede in tabella durante l'asta
-    const liberiTutti = all.filter(r => r.dataset.status !== 'assegnato');
-    const liberi = activeRole === 'ALL' ? liberiTutti : liberiTutti.filter(r => r.dataset.role === activeRole);
-    const topFree = liberi.slice().sort((a, b) => parseFloat(b.dataset.airating) - parseFloat(a.dataset.airating))[0];
+    const { top: topFree } = bestFreePlayer();
     document.getElementById('stat-target').textContent = topFree ? topFree.querySelector('.pname').textContent : '—';
 
-    const insight = document.getElementById('insight-text');
-    if (topFree) {
-      insight.textContent = `Il prezzo consigliato più alto tra i liberi è per ${topFree.querySelector('.pname').textContent} (${topFree.dataset.role}): ${topFree.dataset.airating} crediti, con ${liberi.length} giocatori ancora sul mercato${activeRole !== 'ALL' ? ' in questa fase' : ''}.`;
-    } else if (all.length) {
-      insight.textContent = 'Tutti i giocatori di questa fase sono già stati assegnati.';
+    renderNextPick();
+  }
+
+  // card "prossimo acquisto consigliato": il miglior affare ancora libero, con un
+  // tasto per saltare subito a quella riga della tabella - una segnalazione, non un
+  // obbligo, cosi' si puo' scegliere liberamente chi prendere davvero
+  function renderNextPick() {
+    const body = document.getElementById('next-pick-body');
+    const { liberi, top } = bestFreePlayer();
+    if (!rows().length) {
+      body.innerHTML = '<p class="hint">Importa il listone per vedere qui il prossimo acquisto consigliato.</p>';
+    } else if (!top) {
+      body.innerHTML = '<p class="hint">Tutti i giocatori di questa fase sono già stati assegnati.</p>';
     } else {
-      insight.textContent = "Importa il listone per vedere qui il prossimo obiettivo consigliato.";
+      const nome = top.querySelector('.pname').textContent;
+      body.innerHTML = `
+        <div class="next-pick-player">
+          <span class="role-pill ${top.dataset.role}">${top.dataset.role}</span>
+          <div><div class="pname">${nome}</div><div class="pteam">${top.dataset.team}</div></div>
+        </div>
+        <div class="next-pick-price">${top.dataset.airating} <span>cr.</span></div>
+        <p class="hint">${liberi.length} giocatori ancora liberi in questa vista</p>
+        <button type="button" class="btn" id="next-pick-goto">Vai al giocatore ↓</button>`;
+      document.getElementById('next-pick-goto').addEventListener('click', () => scrollToPlayerRow(nome));
     }
+  }
+
+  // scorre la tabella fino alla riga del giocatore e la fa lampeggiare per farla notare
+  function scrollToPlayerRow(nome) {
+    const row = rows().find(r => r.querySelector('.pname').textContent === nome);
+    if (!row) return;
+    row.scrollIntoView({ block: 'center', behavior: 'smooth' });
+    row.classList.add('flash-row');
+    setTimeout(() => row.classList.remove('flash-row'), 1600);
   }
 
   // ---------------- importazione listone ufficiale (.xlsx / .xls / .csv) ----------------

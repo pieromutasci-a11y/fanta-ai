@@ -181,6 +181,9 @@ input[type="text"], input[type="number"], select {
 .pteam { font-size: 0.76rem; color: var(--ink-faint); }
 .ai-val { font-variant-numeric: tabular-nums; font-weight: 700; }
 .ai-val .delta { font-size: 0.72rem; font-weight: 600; margin-left: 0.25rem; }
+.ai-price { font-variant-numeric: tabular-nums; }
+.ai-sub { font-size: 0.72rem; font-weight: 400; color: var(--ink-faint); font-variant-numeric: tabular-nums; }
+.ai-nomatch { color: var(--risk); cursor: help; }
 .delta.up { color: var(--pitch-deep); }
 .delta.down { color: var(--risk); }
 @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .delta.up { color: var(--pitch-bright); } }

@@ -350,7 +350,7 @@
               <tr><td>Squadra</td><td>Squadra di Serie A — obbligatoria</td></tr>
               <tr><td>Qt.A / Qt.I / Diff.</td><td>Quotazione attuale, iniziale e differenza (Classic)</td></tr>
               <tr><td>Qt.A M / Qt.I M / Diff.M</td><td>Le stesse quotazioni in modalità Mantra</td></tr>
-              <tr><td>FVM / FVM M</td><td>FantaValore di Mercato — punto di partenza per il valore consigliato dall'AI</td></tr>
+              <tr><td>FVM / FVM M</td><td>FantaValore di Mercato — usato solo come riferimento per i pochi giocatori senza previsione AI abbinata</td></tr>
             </tbody>
           </table>
         </details>
@@ -386,13 +386,13 @@
           <input type="search" placeholder="Cerca giocatore…" id="search-player">
           <select id="team-filter"><option value="ALL">Tutte le squadre</option></select>
           <div class="rating-filter">
-            <input type="number" id="rating-min" placeholder="Val. min">
+            <input type="number" id="rating-min" placeholder="Cr. min">
             <span>–</span>
-            <input type="number" id="rating-max" placeholder="Val. max">
+            <input type="number" id="rating-max" placeholder="Cr. max">
           </div>
           <select id="sort-select">
-            <option value="ai-desc">Valore AI ↓</option>
-            <option value="ai-asc">Valore AI ↑</option>
+            <option value="ai-desc">Prezzo IA ↓</option>
+            <option value="ai-asc">Prezzo IA ↑</option>
             <option value="name-asc">Nome A-Z</option>
           </select>
         </div>
@@ -410,7 +410,7 @@
         <div class="listone">
           <table class="listone-table">
             <thead>
-              <tr><th>Ruolo</th><th>Giocatore</th><th>Valore AI</th><th>Assegnazione</th></tr>
+              <tr><th>Ruolo</th><th>Giocatore</th><th>Prezzo IA</th><th>Assegnazione</th></tr>
             </thead>
             <tbody id="listone-body"></tbody>
           </table>
@@ -431,7 +431,7 @@
 
         <div class="insight-card">
           <div class="k">Aggiornamento AI</div>
-          <p>Con 238 giocatori ancora liberi, il valore consigliato per i centrocampisti offensivi è salito del 9% — considera di anticipare Barella prima che salga ancora.</p>
+          <p id="insight-text">Importa il listone per vedere qui il prossimo obiettivo consigliato.</p>
         </div>
 
         <div class="panel-card">
@@ -446,7 +446,7 @@
   </section>
 </main>
 
-<footer class="site wrap">Mockup della guida all'asta — dati d'esempio, nessun calcolo reale.</footer>
+<footer class="site wrap">Il prezzo consigliato si ricalcola in tempo reale: si basa sul valore atteso di ogni giocatore (previsto dai modelli AI di FantaAI) confrontato con il livello di rimpiazzo del suo ruolo, e sul budget ancora disponibile in lega.</footer>
 
 <script src="js/xlsx.mini.min.js"></script>
 <script>
@@ -463,17 +463,42 @@
       const opponents = [...document.querySelectorAll('#opponent-list input')].map(i => i.value.trim()).filter(Boolean);
       const players = rows().map(r => ({
         role: r.dataset.role, team: r.dataset.team, airating: r.dataset.airating,
+        fvm: r.dataset.fvm || 0, valoreAtteso: r.dataset.valoreAtteso === '' ? null : r.dataset.valoreAtteso,
         name: r.querySelector('.pname').textContent, status: r.dataset.status,
         assignedTeam: r.dataset.assignedTeam || null, price: r.dataset.price || null,
       }));
       localStorage.setItem(ASTA_STORAGE_KEY, JSON.stringify({
         credits: document.getElementById('credits').value,
-        opponents, players,
+        opponents, players, counts,
         strategyText: document.getElementById('strategy-input').value,
       }));
     } catch { /* storage non disponibile: si continua solo in memoria */ }
   }
   const astaSaved = loadAstaSaved();
+
+  // ---------------- previsioni AI: caricate una volta, usate per calcolare il valore atteso di ogni giocatore ----------------
+  // valore atteso = media_fantavoto prevista x presenze previste: una stima dei punti fantacalcio
+  // totali che il giocatore produrra' in stagione, la base su cui si costruisce il prezzo consigliato.
+  const stripAccents = s => s.normalize('NFD').replace(/[̀-ͯ]/g, '');
+  const normalizeName = s => stripAccents(String(s || '')).toLowerCase().replace(/\s+/g, ' ').trim();
+  const AI_PREDICTIONS = new Map();
+  const aiPredictionsReady = fetch('data/previsioni_2026_27.csv')
+    .then(r => { if (!r.ok) throw new Error('previsioni non trovate'); return r.text(); })
+    .then(text => {
+      const workbook = XLSX.read(text, { type: 'string' });
+      const sheet = workbook.Sheets[workbook.SheetNames[0]];
+      XLSX.utils.sheet_to_json(sheet, { defval: '' }).forEach(r => {
+        const mediaFantavoto = parseFloat(r.media_fantavoto) || 0;
+        const presenze = parseFloat(r.presenze) || 0;
+        AI_PREDICTIONS.set(normalizeName(r.nome), {
+          valoreAtteso: mediaFantavoto * presenze,
+          mediaFantavoto, presenze,
+          golFatti: parseFloat(r.gol_fatti) || 0,
+          assist: parseFloat(r.assist) || 0,
+        });
+      });
+    })
+    .catch(() => { /* niente previsioni disponibili: si useranno solo le quotazioni ufficiali come riserva */ });
 
   // stepper tra le due fasi
   document.querySelectorAll('.stepper button').forEach(btn => {
@@ -489,13 +514,17 @@
   });
 
   // stepper composizione rosa
-  const counts = { p: 3, d: 8, c: 8, a: 6 };
+  const counts = Object.assign({ p: 3, d: 8, c: 8, a: 6 }, (astaSaved && astaSaved.counts) || {});
+  Object.keys(counts).forEach(role => { document.getElementById('count-' + role).textContent = counts[role]; });
+  document.getElementById('role-total').textContent = Object.values(counts).reduce((a, b) => a + b, 0);
   document.querySelectorAll('.stepper-mini button').forEach(btn => {
     btn.addEventListener('click', () => {
       const role = btn.dataset.role;
       counts[role] = Math.max(0, counts[role] + parseInt(btn.dataset.step, 10));
       document.getElementById('count-' + role).textContent = counts[role];
       document.getElementById('role-total').textContent = Object.values(counts).reduce((a, b) => a + b, 0);
+      persistAsta();
+      calcolaPrezziConsigliati();
     });
   });
 
@@ -522,6 +551,7 @@
     persistAsta();
     refreshAssignSelects();
     refreshTeamRosters();
+    calcolaPrezziConsigliati();
   }
 
   // ripristina avversari, crediti e listone salvati nel browser
@@ -557,7 +587,7 @@
   });
 
   // ---------------- listone: filtri, ordinamento, rose live ----------------
-  const TEAM_BUDGET = 500;
+  const getTeamBudget = () => parseInt(document.getElementById('credits').value, 10) || 500;
   // le squadre selezionabili nascono dagli avversari inseriti nella card "Avversari" del setup
   let TEAM_NAMES = [];
   function syncTeamNames() {
@@ -635,10 +665,11 @@
   function refreshTeamRosters() {
     const assigned = rows().filter(r => r.dataset.status === 'assegnato');
     teamsPanel.innerHTML = '';
+    const teamBudget = getTeamBudget();
     TEAM_NAMES.forEach(team => {
       const mine = assigned.filter(r => r.dataset.assignedTeam === team);
       const spent = mine.reduce((s, r) => s + (parseInt(r.dataset.price, 10) || 0), 0);
-      const remaining = TEAM_BUDGET - spent;
+      const remaining = teamBudget - spent;
       const counts = { P: 0, D: 0, C: 0, A: 0 };
       mine.forEach(r => counts[r.dataset.role]++);
 
@@ -647,9 +678,9 @@
       block.innerHTML = `
         <div class="t-head">
           <span class="t-name${team === 'La mia squadra' ? ' you' : ''}">${team}</span>
-          <span class="t-budget">${remaining} / ${TEAM_BUDGET}</span>
+          <span class="t-budget">${remaining} / ${teamBudget}</span>
         </div>
-        <div class="bar"><span style="width:${(spent / TEAM_BUDGET * 100).toFixed(1)}%"></span></div>
+        <div class="bar"><span style="width:${(spent / teamBudget * 100).toFixed(1)}%"></span></div>
         <div class="role-mini"><span><b>${counts.P}</b> P</span><span><b>${counts.D}</b> D</span><span><b>${counts.C}</b> C</span><span><b>${counts.A}</b> A</span></div>
         <button class="roster-toggle" type="button" aria-expanded="false">Rosa (${mine.length}) <svg viewBox="0 0 16 16" fill="none"><path d="M4 6l4 4 4-4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
         <div class="team-roster-list" hidden>
@@ -669,6 +700,78 @@
     });
   }
 
+  // ---------------- motore dei prezzi consigliati: value over replacement ----------------
+  // Per ogni giocatore ancora libero calcola quanto "vale in piu'" rispetto all'ultimo
+  // titolare papabile del suo ruolo a livello di lega (il "livello di rimpiazzo"), poi
+  // distribuisce il budget di mercato ancora disponibile in proporzione a questo valore.
+  // Si ricalcola a ogni assegnazione: budget e slot liberi cambiano, quindi cambiano anche
+  // i prezzi consigliati di chi resta.
+  const ROLE_KEY = { P: 'p', D: 'd', C: 'c', A: 'a' };
+  function calcolaPrezziConsigliati() {
+    const teamBudget = getTeamBudget();
+    const numSquadre = Math.max(TEAM_NAMES.length, 1);
+    const slotTotaliPerSquadra = Object.values(counts).reduce((a, b) => a + b, 0);
+
+    const all = rows();
+    const assegnati = all.filter(r => r.dataset.status === 'assegnato');
+    const liberi = all.filter(r => r.dataset.status !== 'assegnato');
+
+    // budget di mercato: crediti totali ancora nelle mani di tutte le squadre, meno una
+    // riserva di 1 credito per ogni slot di rosa ancora da riempire (in fantacalcio si puo'
+    // sempre prendere un giocatore all'ultimo credito, quindi va sempre lasciato lo spazio)
+    let creditiResiduiTotali = 0, slotLiberiTotali = 0;
+    TEAM_NAMES.forEach(team => {
+      const mie = assegnati.filter(r => r.dataset.assignedTeam === team);
+      const speso = mie.reduce((s, r) => s + (parseInt(r.dataset.price, 10) || 0), 0);
+      creditiResiduiTotali += Math.max(0, teamBudget - speso);
+      slotLiberiTotali += Math.max(0, slotTotaliPerSquadra - mie.length);
+    });
+    const budgetDistribuibile = Math.max(0, creditiResiduiTotali - slotLiberiTotali * 1);
+    // nessun prezzo puo' superare quanto una squadra potrebbe mai pagare per un solo
+    // giocatore: tutto il proprio budget, meno 1 credito riservato per ognuno degli
+    // altri slot di rosa ancora da riempire
+    const prezzoMassimoPagabile = Math.max(1, teamBudget - (slotTotaliPerSquadra - 1));
+
+    // livello di rimpiazzo per ruolo: valore atteso dell'ultimo titolare papabile
+    // (posizione = numero squadre x slot di quel ruolo) tra i liberi con previsione AI
+    const replacement = {};
+    ['P', 'D', 'C', 'A'].forEach(ruolo => {
+      const valori = liberi
+        .filter(r => r.dataset.role === ruolo && r.dataset.valoreAtteso !== '')
+        .map(r => parseFloat(r.dataset.valoreAtteso))
+        .sort((a, b) => b - a);
+      const slotRuolo = (counts[ROLE_KEY[ruolo]] || 0) * numSquadre;
+      replacement[ruolo] = valori.length ? (valori[Math.min(slotRuolo, valori.length) - 1] ?? valori[valori.length - 1]) : 0;
+    });
+
+    // VOR di ogni libero abbinato a una previsione AI, e somma totale per la proporzione
+    let sumVOR = 0;
+    const vor = new Map();
+    liberi.forEach(r => {
+      if (r.dataset.valoreAtteso === '') return;
+      const v = Math.max(0, parseFloat(r.dataset.valoreAtteso) - replacement[r.dataset.role]);
+      vor.set(r, v);
+      sumVOR += v;
+    });
+
+    liberi.forEach(r => {
+      let prezzo;
+      if (r.dataset.valoreAtteso !== '' && sumVOR > 0) {
+        prezzo = 1 + Math.round(budgetDistribuibile * vor.get(r) / sumVOR);
+      } else {
+        // nessun abbinamento AI: riserva minima, il valore si basa solo sull'FVM ufficiale
+        prezzo = Math.max(1, Math.round(parseFloat(r.dataset.fvm) || 1));
+      }
+      prezzo = Math.min(prezzo, prezzoMassimoPagabile);
+      r.dataset.airating = prezzo;
+      const cell = r.querySelector('.ai-val');
+      if (cell) cell.innerHTML = aiValCellHTML(prezzo, r.dataset.valoreAtteso);
+    });
+
+    applyFilters();
+    refreshStats();
+  }
+
   // rimuovi un giocatore direttamente dal pannello "rose in tempo reale"
   teamsPanel.addEventListener('click', (e) => {
     const btn = e.target.closest('.rm-from-team'); if (!btn) return;
@@ -679,8 +782,7 @@
     delete row.dataset.price;
     row.querySelector('td:last-child').innerHTML = assignCellHTML();
     refreshTeamRosters();
-    refreshStats();
-    applyFilters();
+    calcolaPrezziConsigliati();
     persistAsta();
   });
 
@@ -712,7 +814,7 @@
       row.dataset.price = price.value;
       row.querySelector('td:last-child').innerHTML = assignedCellHTML(team, price.value);
       refreshTeamRosters();
-      refreshStats();
+      calcolaPrezziConsigliati();
       persistAsta();
       return;
     }
@@ -723,8 +825,7 @@
       delete row.dataset.price;
       row.querySelector('td:last-child').innerHTML = assignCellHTML();
       refreshTeamRosters();
-      refreshStats();
-      applyFilters();
+      calcolaPrezziConsigliati();
       persistAsta();
       return;
     }
@@ -738,8 +839,18 @@
     document.getElementById('stat-spent').innerHTML = spent + '<span style="font-size:0.9rem;color:var(--ink-faint);"> / 500</span>';
     document.getElementById('stat-assigned').innerHTML = assigned.length + '<span style="font-size:0.9rem;color:var(--ink-faint);"> / ' + all.length + '</span>';
     document.getElementById('stat-free').textContent = all.length - assigned.length;
-    const topFree = all.filter(r => r.dataset.status !== 'assegnato').sort((a, b) => parseFloat(b.dataset.airating) - parseFloat(a.dataset.airating))[0];
+    const liberi = all.filter(r => r.dataset.status !== 'assegnato');
+    const topFree = liberi.sort((a, b) => parseFloat(b.dataset.airating) - parseFloat(a.dataset.airating))[0];
     document.getElementById('stat-target').textContent = topFree ? topFree.querySelector('.pname').textContent : '—';
+
+    const insight = document.getElementById('insight-text');
+    if (topFree) {
+      insight.textContent = `Il prezzo consigliato più alto tra i liberi è per ${topFree.querySelector('.pname').textContent} (${topFree.dataset.role}): ${topFree.dataset.airating} crediti, con ${liberi.length} giocatori ancora sul mercato.`;
+    } else if (all.length) {
+      insight.textContent = 'Tutti i giocatori del listone sono già stati assegnati.';
+    } else {
+      insight.textContent = "Importa il listone per vedere qui il prossimo obiettivo consigliato.";
+    }
   }
 
   // ---------------- importazione listone ufficiale (.xlsx / .xls / .csv) ----------------
@@ -764,11 +875,12 @@
       const cell = status === 'assegnato'
         ? assignedCellHTML(p.assignedTeam, p.price)
         : `<div class="assign-inline">${buildAssignSelect()}<input type="number" placeholder="Cred."><button type="button" class="assign-btn">✓</button></div>`;
+      const valoreAttesoAttr = (p.valoreAtteso === null || p.valoreAtteso === undefined) ? '' : p.valoreAtteso;
       return `
-      <tr data-role="${p.role}" data-team="${p.team}" data-airating="${p.airating}" data-status="${status}"${extraAttrs}>
+      <tr data-role="${p.role}" data-team="${p.team}" data-airating="${p.airating}" data-fvm="${p.fvm || 0}" data-valore-atteso="${valoreAttesoAttr}" data-status="${status}"${extraAttrs}>
         <td><span class="role-pill ${p.role}">${p.role}</span></td>
         <td><div class="pname">${p.name}</div><div class="pteam">${p.team}</div></td>
-        <td class="ai-val">${p.airating}</td>
+        <td class="ai-val">${aiValCellHTML(p.airating, valoreAttesoAttr)}</td>
         <td>${cell}</td>
       </tr>`;
     }).join('');
@@ -782,7 +894,16 @@
 
     applyFilters();
     refreshTeamRosters();
-    refreshStats();
+    calcolaPrezziConsigliati();
+  }
+
+  // markup della cella "Prezzo IA": prezzo consigliato in crediti + il valore atteso
+  // (punti fantavoto previsti in stagione) che lo giustifica, se il giocatore e' stato
+  // abbinato alle previsioni; altrimenti un avviso che si sta usando solo l'FVM ufficiale.
+  function aiValCellHTML(prezzo, valoreAtteso) {
+    const sub = valoreAtteso === '' ? '<span class="ai-nomatch" title="Nessun abbinamento con le previsioni AI: prezzo stimato solo dall\'FVM ufficiale">n/d AI</span>'
+      : `${(+valoreAtteso).toFixed(0)} pt previsti`;
+    return `<div class="ai-price">${prezzo} cr.</div><div class="ai-sub">${sub}</div>`;
   }
 
   function showImportStatus(kind, message) {
@@ -793,6 +914,11 @@
   }
 
   function parseListoneFile(file) {
+    // aspetta che le previsioni AI siano caricate, cosi' l'abbinamento nome->previsione
+    // funziona anche se l'utente importa il listone prima che il fetch sia finito
+    aiPredictionsReady.finally(() => parseListoneFileNow(file));
+  }
+  function parseListoneFileNow(file) {
     const isCsv = /\.csv$/i.test(file.name);
     const reader = new FileReader();
     reader.onerror = () => showImportStatus('error', 'Non sono riuscito a leggere il file. Riprova.');
@@ -823,12 +949,16 @@
           .map(row => {
             const fvm = parseFloat(row[colFor.fvm]) || 0;
             const qtA = parseFloat(row[colFor.qta]) || 0;
+            const name = String(row[colFor.nome]).trim();
+            const ai = AI_PREDICTIONS.get(normalizeName(name));
             return {
               role: String(row[colFor.r]).trim().toUpperCase(),
               roleMantra: colFor.rm ? String(row[colFor.rm]).trim() : '',
-              name: String(row[colFor.nome]).trim(),
+              name,
               team: String(row[colFor.squadra]).trim(),
-              airating: fvm || qtA || 0,
+              fvm: fvm || qtA || 0,
+              valoreAtteso: ai ? ai.valoreAtteso : null,
+              airating: 0, // calcolato subito dopo da calcolaPrezziConsigliati()
             };
           })
           .filter(p => p.name && ['P', 'D', 'C', 'A'].includes(p.role));
@@ -838,9 +968,10 @@
           return;
         }
 
+        const matched = players.filter(p => p.valoreAtteso !== null).length;
         renderImportedListone(players);
         persistAsta();
-        showImportStatus('ok', `Importati ${players.length} giocatori da "${file.name}". Colonne riconosciute: ${Object.keys(colFor).join(', ').toUpperCase()}.`);
+        showImportStatus('ok', `Importati ${players.length} giocatori da "${file.name}" — ${matched} abbinati alle previsioni AI. Colonne riconosciute: ${Object.keys(colFor).join(', ').toUpperCase()}.`);
       } catch (err) {
         showImportStatus('error', 'Formato file non riconosciuto. Assicurati che sia un .xlsx, .xls o .csv valido.');
       }
@@ -856,7 +987,11 @@
   ['dragleave', 'drop'].forEach(evt => dropzone.addEventListener(evt, (e) => { e.preventDefault(); dropzone.classList.remove('drag'); }));
   dropzone.addEventListener('drop', (e) => { if (e.dataTransfer.files[0]) parseListoneFile(e.dataTransfer.files[0]); });
 
-  document.getElementById('credits').addEventListener('input', persistAsta);
+  document.getElementById('credits').addEventListener('input', () => {
+    persistAsta();
+    refreshTeamRosters();
+    calcolaPrezziConsigliati();
+  });
 
   // ---------------- parser a regole: strategia in linguaggio naturale ----------------
   // Gira interamente nel browser: nessuna AI, nessun servizio esterno, zero costi.
@@ -1037,5 +1172,5 @@
 
   applyFilters();
   refreshTeamRosters();
-  refreshStats();
+  calcolaPrezziConsigliati();
 </script>

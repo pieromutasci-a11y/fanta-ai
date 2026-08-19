@@ -384,12 +384,47 @@
     });
   }
 
-  // percentuale del budget di lega destinata a ciascun ruolo (non devono per forza
-  // sommare esattamente a 100: si normalizzano da sole al momento del calcolo prezzi,
-  // cosi' come per gli altri slider non c'e' bisogno di inseguire un totale preciso)
+  // percentuale del budget di lega destinata a ciascun ruolo: gli slider sono
+  // "collegati" e sommano sempre a 100 - muovendone uno, il resto si ridistribuisce
+  // da solo in proporzione a come stava prima, cosi' non serve calcolare a mente i
+  // complementari.
   const PESI_BUDGET_DEFAULT = { P: 5, D: 25, C: 30, A: 40 };
   const PESI_BUDGET = Object.assign({}, PESI_BUDGET_DEFAULT, (astaSaved && astaSaved.pesiBudget) || {});
+  normalizzaPesiBudget(); // nel caso arrivi da un salvataggio precedente che non sommava a 100
   const ROLE_LABEL_BUDGET = { P: 'Portieri', D: 'Difensori', C: 'Centrocampisti', A: 'Attaccanti' };
+
+  // riporta PESI_BUDGET a sommare esattamente 100, mantenendo le proporzioni attuali
+  function normalizzaPesiBudget() {
+    const somma = Object.values(PESI_BUDGET).reduce((a, b) => a + b, 0);
+    if (somma === 100) return;
+    ['P', 'D', 'C', 'A'].forEach(r => {
+      PESI_BUDGET[r] = somma > 0 ? Math.round(PESI_BUDGET[r] / somma * 100) : 25;
+    });
+    correggiArrotondamento(['P', 'D', 'C', 'A']);
+  }
+  // dopo un Math.round() la somma puo' sballare di 1-2 punti: li assorbe il ruolo con
+  // il valore piu' alto TRA QUELLI INDICATI - mai il ruolo appena spostato a mano,
+  // altrimenti lo slider che si sta trascinando "scatterebbe" di 1 rispetto a dove lo si e' lasciato
+  function correggiArrotondamento(candidati) {
+    const diff = 100 - Object.values(PESI_BUDGET).reduce((a, b) => a + b, 0);
+    if (diff === 0) return;
+    const top = candidati.reduce((best, r) => PESI_BUDGET[r] > PESI_BUDGET[best] ? r : best, candidati[0]);
+    PESI_BUDGET[top] += diff;
+  }
+  // sposta il ruolo cambiato al nuovo valore e ridistribuisce il resto (100 - nuovoValore)
+  // tra gli altri tre, in proporzione a come stavano tra loro prima del cambiamento
+  function ribilanciaPesiBudget(ruoloCambiato, nuovoValore) {
+    nuovoValore = Math.min(100, Math.max(0, nuovoValore));
+    const altri = ['P', 'D', 'C', 'A'].filter(r => r !== ruoloCambiato);
+    const sommaAltriPrima = altri.reduce((s, r) => s + PESI_BUDGET[r], 0);
+    const restante = 100 - nuovoValore;
+    PESI_BUDGET[ruoloCambiato] = nuovoValore;
+    altri.forEach(r => {
+      PESI_BUDGET[r] = sommaAltriPrima > 0 ? Math.round(PESI_BUDGET[r] / sommaAltriPrima * restante) : Math.round(restante / altri.length);
+    });
+    correggiArrotondamento(altri);
+  }
+
   function renderBudgetWeightsPanel() {
     const panel = document.getElementById('budget-weights-panel');
     panel.innerHTML = ['P', 'D', 'C', 'A'].map(ruolo => `
@@ -398,19 +433,18 @@
         <input type="range" min="0" max="100" value="${PESI_BUDGET[ruolo]}" data-role-budget="${ruolo}" class="weight-slider">
         <span class="weight-value">${PESI_BUDGET[ruolo]}%</span>
       </div>`).join('');
-    const totale = Object.values(PESI_BUDGET).reduce((a, b) => a + b, 0);
-    const box = document.getElementById('budget-total');
-    box.textContent = `Totale: ${totale}%` + (totale !== 100 ? ' — non serve arrivare esattamente a 100, FantaAI proporziona da solo' : '');
-    box.classList.toggle('off', totale !== 100);
+    document.getElementById('budget-total').textContent = 'Totale: 100% — muovendo uno slider gli altri si adattano da soli';
   }
   document.getElementById('budget-weights-panel').addEventListener('input', (e) => {
     const slider = e.target.closest('[data-role-budget]'); if (!slider) return;
-    PESI_BUDGET[slider.dataset.roleBudget] = parseInt(slider.value, 10);
-    slider.nextElementSibling.textContent = slider.value + '%';
-    const totale = Object.values(PESI_BUDGET).reduce((a, b) => a + b, 0);
-    const box = document.getElementById('budget-total');
-    box.textContent = `Totale: ${totale}%` + (totale !== 100 ? ' — non serve arrivare esattamente a 100, FantaAI proporziona da solo' : '');
-    box.classList.toggle('off', totale !== 100);
+    ribilanciaPesiBudget(slider.dataset.roleBudget, parseInt(slider.value, 10));
+    // aggiorna solo valori/etichette (mai l'HTML degli slider): ricrearli a ogni
+    // tocco interromperebbe il trascinamento di quello che si sta muovendo ora
+    document.querySelectorAll('#budget-weights-panel [data-role-budget]').forEach(s => {
+      const r = s.dataset.roleBudget;
+      s.value = PESI_BUDGET[r];
+      s.nextElementSibling.textContent = PESI_BUDGET[r] + '%';
+    });
     calcolaPrezziConsigliati();
     renderTurnBanner();
     persistAsta();

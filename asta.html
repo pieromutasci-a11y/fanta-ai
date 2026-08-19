@@ -449,6 +449,7 @@
 <footer class="site wrap">Il prezzo consigliato si ricalcola in tempo reale: si basa sul valore atteso di ogni giocatore (previsto dai modelli AI di FantaAI) confrontato con il livello di rimpiazzo del suo ruolo, e sul budget ancora disponibile in lega.</footer>
 
 <script src="js/xlsx.mini.min.js"></script>
+<script src="js/prezzo_consigliato.js"></script>
 <script>
   // ---------------- salvataggio nel browser: asta e avversari restano dopo il refresh ----------------
   const ASTA_STORAGE_KEY = 'fantaai-asta';
@@ -701,68 +702,37 @@
   }
 
   // ---------------- motore dei prezzi consigliati: value over replacement ----------------
-  // Per ogni giocatore ancora libero calcola quanto "vale in piu'" rispetto all'ultimo
-  // titolare papabile del suo ruolo a livello di lega (il "livello di rimpiazzo"), poi
-  // distribuisce il budget di mercato ancora disponibile in proporzione a questo valore.
-  // Si ricalcola a ogni assegnazione: budget e slot liberi cambiano, quindi cambiano anche
-  // i prezzi consigliati di chi resta.
-  const ROLE_KEY = { P: 'p', D: 'd', C: 'c', A: 'a' };
+  // L'algoritmo vero (livello di rimpiazzo, VOR, distribuzione del budget) vive in
+  // js/prezzo_consigliato.js (copia leggibile in FANTA_AI/Optimizer/) — qui ci si limita
+  // a raccogliere lo stato attuale dal DOM, chiamarlo, e riportare i prezzi in tabella.
   function calcolaPrezziConsigliati() {
     const teamBudget = getTeamBudget();
-    const numSquadre = Math.max(TEAM_NAMES.length, 1);
-    const slotTotaliPerSquadra = Object.values(counts).reduce((a, b) => a + b, 0);
+    const composizioneRosa = { P: counts.p, D: counts.d, C: counts.c, A: counts.a };
 
     const all = rows();
     const assegnati = all.filter(r => r.dataset.status === 'assegnato');
-    const liberi = all.filter(r => r.dataset.status !== 'assegnato');
+    const liberiRows = all.filter(r => r.dataset.status !== 'assegnato');
 
-    // budget di mercato: crediti totali ancora nelle mani di tutte le squadre, meno una
-    // riserva di 1 credito per ogni slot di rosa ancora da riempire (in fantacalcio si puo'
-    // sempre prendere un giocatore all'ultimo credito, quindi va sempre lasciato lo spazio)
-    let creditiResiduiTotali = 0, slotLiberiTotali = 0;
+    const creditiSpesiPerSquadra = {}, slotOccupatiPerSquadra = {};
     TEAM_NAMES.forEach(team => {
       const mie = assegnati.filter(r => r.dataset.assignedTeam === team);
-      const speso = mie.reduce((s, r) => s + (parseInt(r.dataset.price, 10) || 0), 0);
-      creditiResiduiTotali += Math.max(0, teamBudget - speso);
-      slotLiberiTotali += Math.max(0, slotTotaliPerSquadra - mie.length);
-    });
-    const budgetDistribuibile = Math.max(0, creditiResiduiTotali - slotLiberiTotali * 1);
-    // nessun prezzo puo' superare quanto una squadra potrebbe mai pagare per un solo
-    // giocatore: tutto il proprio budget, meno 1 credito riservato per ognuno degli
-    // altri slot di rosa ancora da riempire
-    const prezzoMassimoPagabile = Math.max(1, teamBudget - (slotTotaliPerSquadra - 1));
-
-    // livello di rimpiazzo per ruolo: valore atteso dell'ultimo titolare papabile
-    // (posizione = numero squadre x slot di quel ruolo) tra i liberi con previsione AI
-    const replacement = {};
-    ['P', 'D', 'C', 'A'].forEach(ruolo => {
-      const valori = liberi
-        .filter(r => r.dataset.role === ruolo && r.dataset.valoreAtteso !== '')
-        .map(r => parseFloat(r.dataset.valoreAtteso))
-        .sort((a, b) => b - a);
-      const slotRuolo = (counts[ROLE_KEY[ruolo]] || 0) * numSquadre;
-      replacement[ruolo] = valori.length ? (valori[Math.min(slotRuolo, valori.length) - 1] ?? valori[valori.length - 1]) : 0;
+      creditiSpesiPerSquadra[team] = mie.reduce((s, r) => s + (parseInt(r.dataset.price, 10) || 0), 0);
+      slotOccupatiPerSquadra[team] = mie.length;
     });
 
-    // VOR di ogni libero abbinato a una previsione AI, e somma totale per la proporzione
-    let sumVOR = 0;
-    const vor = new Map();
-    liberi.forEach(r => {
-      if (r.dataset.valoreAtteso === '') return;
-      const v = Math.max(0, parseFloat(r.dataset.valoreAtteso) - replacement[r.dataset.role]);
-      vor.set(r, v);
-      sumVOR += v;
+    const liberi = liberiRows.map((r, i) => ({
+      id: String(i), ruolo: r.dataset.role,
+      valoreAtteso: r.dataset.valoreAtteso === '' ? null : parseFloat(r.dataset.valoreAtteso),
+      fvm: parseFloat(r.dataset.fvm) || 0,
+    }));
+
+    const { prezzi } = window.FantaAIOptimizer.calcolaPrezziConsigliati({
+      liberi, teamBudget, numSquadre: TEAM_NAMES.length, composizioneRosa,
+      creditiSpesiPerSquadra, slotOccupatiPerSquadra,
     });
 
-    liberi.forEach(r => {
-      let prezzo;
-      if (r.dataset.valoreAtteso !== '' && sumVOR > 0) {
-        prezzo = 1 + Math.round(budgetDistribuibile * vor.get(r) / sumVOR);
-      } else {
-        // nessun abbinamento AI: riserva minima, il valore si basa solo sull'FVM ufficiale
-        prezzo = Math.max(1, Math.round(parseFloat(r.dataset.fvm) || 1));
-      }
-      prezzo = Math.min(prezzo, prezzoMassimoPagabile);
+    liberiRows.forEach((r, i) => {
+      const prezzo = prezzi.get(String(i));
       r.dataset.airating = prezzo;
       const cell = r.querySelector('.ai-val');
       if (cell) cell.innerHTML = aiValCellHTML(prezzo, r.dataset.valoreAtteso);

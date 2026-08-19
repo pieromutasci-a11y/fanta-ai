@@ -1021,7 +1021,18 @@
           ? XLSX.read(e.target.result, { type: 'string' })
           : XLSX.read(e.target.result, { type: 'array' });
         const sheet = workbook.Sheets[workbook.SheetNames[0]];
-        const rowsData = XLSX.utils.sheet_to_json(sheet, { defval: '' });
+        // molti listoni ufficiali hanno una riga di titolo (es. "Quotazioni Fantacalcio
+        // Stagione 2026/27") sopra le intestazioni vere: si cerca la prima riga che
+        // contiene una colonna riconosciuta, invece di assumere che sia sempre la prima
+        const righeGrezze = XLSX.utils.sheet_to_json(sheet, { header: 1, defval: '' });
+        if (!righeGrezze.length) { showImportStatus('error', 'Il file sembra vuoto.'); return; }
+        const aliasRiconosciuti = new Set(Object.values(HEADER_ALIASES).flat());
+        let indiceIntestazione = righeGrezze.findIndex(riga => riga.some(cella => aliasRiconosciuti.has(normalizeHeader(cella))));
+        if (indiceIntestazione === -1) indiceIntestazione = 0;
+        const intestazione = righeGrezze[indiceIntestazione];
+        const rowsData = righeGrezze.slice(indiceIntestazione + 1)
+          .filter(riga => riga.some(cella => cella !== ''))
+          .map(riga => Object.fromEntries(intestazione.map((h, i) => [h, riga[i] !== undefined ? riga[i] : ''])));
         if (!rowsData.length) { showImportStatus('error', 'Il file sembra vuoto.'); return; }
 
         const originalKeys = Object.keys(rowsData[0]);

@@ -228,6 +228,7 @@ input[type="text"], input[type="number"], select {
 .assign-inline button { border: none; background: var(--pitch-deep); color: var(--pitch-tint); border-radius: 7px; padding: 0.4rem 0.7rem; font-size: 0.78rem; font-weight: 700; cursor: pointer; }
 @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .assign-inline button { background: var(--pitch-bright); color: #06120b; } }
 :root[data-theme="dark"] .assign-inline button { background: var(--pitch-bright); color: #06120b; }
+.assign-error { font-size: 0.74rem; color: var(--risk); margin-top: 0.3rem; max-width: 14rem; }
 .assigned-to { font-size: 0.8rem; }
 .assigned-to b { font-weight: 700; }
 .assigned-to .price { color: var(--gold); font-weight: 800; font-variant-numeric: tabular-nums; }

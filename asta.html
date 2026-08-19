@@ -785,11 +785,30 @@
   // markup della cella "assegnazione": form di assegnazione se libero, riepilogo + annulla se preso
   function assignCellHTML() {
     return '<div class="assign-inline">' + buildAssignSelect() +
-      '<input type="number" placeholder="Cred."><button type="button" class="assign-btn">✓</button></div>';
+      '<input type="number" placeholder="Cred."><button type="button" class="assign-btn">✓</button></div>' +
+      '<div class="assign-error" hidden></div>';
   }
   function assignedCellHTML(team, price) {
     return 'Preso da <b>' + team + '</b> per <span class="price">' + price + ' cr.</span>' +
       ' <button type="button" class="undo-assign" title="Annulla assegnazione">↺ Annulla</button>';
+  }
+
+  // quanto ha speso una squadra finora e quanti giocatori ha per ciascun ruolo -
+  // usato per bloccare assegnazioni che sforerebbero i limiti impostati nel setup
+  function statoSquadra(team) {
+    const mie = rows().filter(r => r.dataset.status === 'assegnato' && r.dataset.assignedTeam === team);
+    const speso = mie.reduce((s, r) => s + (parseInt(r.dataset.price, 10) || 0), 0);
+    const perRuolo = { P: 0, D: 0, C: 0, A: 0 };
+    mie.forEach(r => perRuolo[r.dataset.role]++);
+    return { speso, perRuolo };
+  }
+  function mostraErroreAssegnazione(row, messaggio) {
+    const box = row.querySelector('.assign-error');
+    if (!box) return;
+    box.textContent = messaggio;
+    box.hidden = false;
+    clearTimeout(box._timeout);
+    box._timeout = setTimeout(() => { box.hidden = true; }, 4000);
   }
 
   // normalizza le righe già segnate come "assegnato" nell'HTML statico, cosi' hanno anche loro il tasto annulla
@@ -805,6 +824,19 @@
       const price = row.querySelector('input[type="number"]');
       const team = select.value;
       if (team === 'Assegna a…' || !price.value) { price.focus(); return; }
+      const prezzoRichiesto = parseInt(price.value, 10);
+      const ruolo = row.dataset.role;
+      const limiteRuolo = { P: counts.p, D: counts.d, C: counts.c, A: counts.a }[ruolo];
+      const { speso, perRuolo } = statoSquadra(team);
+      if (perRuolo[ruolo] >= limiteRuolo) {
+        mostraErroreAssegnazione(row, `${team} ha già ${limiteRuolo} ${ROLE_LABEL_BUDGET[ruolo].toLowerCase()} — è il massimo impostato in "Composizione rosa".`);
+        return;
+      }
+      const rimasti = getTeamBudget() - speso;
+      if (prezzoRichiesto > rimasti) {
+        mostraErroreAssegnazione(row, `${team} ha solo ${rimasti} crediti rimasti.`);
+        return;
+      }
       row.dataset.status = 'assegnato';
       row.dataset.assignedTeam = team;
       row.dataset.price = price.value;
@@ -963,7 +995,7 @@
         : '';
       const cell = status === 'assegnato'
         ? assignedCellHTML(p.assignedTeam, p.price)
-        : `<div class="assign-inline">${buildAssignSelect()}<input type="number" placeholder="Cred."><button type="button" class="assign-btn">✓</button></div>`;
+        : assignCellHTML();
       // il punteggio si ricalcola sempre qui con i pesi CORRENTI, mai da un valore salvato
       const punteggio = p.aiRaw ? calcolaPunteggioAI(p.aiRaw, p.role, PESI) : null;
       const valoreAttesoAttr = (punteggio === null || punteggio === undefined) ? '' : punteggio;

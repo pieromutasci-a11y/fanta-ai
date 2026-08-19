@@ -5,7 +5,7 @@
    Richiede base.css per token e componenti comuni.
    ============================================================ */
 
-.wrap { max-width: 78rem; } /* l'asta ha tabelle larghe, più respiro della home */
+.wrap { max-width: 108rem; } /* l'asta ha tabelle larghe: sfrutta quasi tutta la larghezza dello schermo */
 
 /* ---------------- stepper fasi ---------------- */
 .stepper { display: flex; gap: 0.5rem; }
@@ -18,13 +18,13 @@
 .stepper button[aria-selected="true"] { background: var(--pitch-deep); color: var(--pitch-tint); border-color: var(--pitch-deep); }
 .stepper button[aria-selected="true"] .n { background: rgba(255,255,255,0.2); color: inherit; }
 
-main.stage { padding: 2.2rem 0 4rem; }
+main.stage { padding: 1.4rem 0 2.5rem; }
 .view { display: none; }
 .view.active { display: block; animation: fade 0.22s ease; }
 @media (prefers-reduced-motion: reduce) { .view.active { animation: none; } }
 @keyframes fade { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
 
-.page-head { margin-bottom: 2rem; }
+.page-head { margin-bottom: 1.3rem; }
 .page-head h1 { font-size: clamp(1.5rem, 3vw, 1.9rem); letter-spacing: -0.01em; }
 .page-head p { color: var(--ink-soft); margin-top: 0.4rem; max-width: 40rem; font-size: 0.95rem; }
 
@@ -127,22 +127,22 @@ input[type="text"], input[type="number"], select {
 .setup-footer { display: flex; justify-content: flex-end; gap: 0.7rem; margin-top: 1.8rem; }
 
 /* ============ fase 2: asta in corso ============ */
-.live-grid { display: grid; grid-template-columns: 1fr 19rem; gap: 1.25rem; align-items: start; }
+.live-grid { display: grid; grid-template-columns: 1fr 20rem; gap: 1.25rem; align-items: start; }
 @media (max-width: 64rem) { .live-grid { grid-template-columns: 1fr; } }
 
-.stat-strip { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.75rem; margin-bottom: 1.25rem; }
+.stat-strip { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.6rem; margin-bottom: 0.8rem; }
 @media (max-width: 40rem) { .stat-strip { grid-template-columns: 1fr 1fr; } }
-.stat { border: 1px solid var(--line); background: var(--paper-raised); border-radius: 12px; padding: 0.8rem 0.95rem; }
-.stat .label { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--ink-faint); }
-.stat .value { font-size: 1.35rem; font-weight: 800; font-variant-numeric: tabular-nums; margin-top: 0.1rem; }
+.stat { border: 1px solid var(--line); background: var(--paper-raised); border-radius: 12px; padding: 0.55rem 0.85rem; }
+.stat .label { font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--ink-faint); }
+.stat .value { font-size: 1.2rem; font-weight: 800; font-variant-numeric: tabular-nums; margin-top: 0.05rem; }
 .stat .value.accent { color: var(--pitch-deep); }
 @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .stat .value.accent { color: var(--pitch-bright); } }
 :root[data-theme="dark"] .stat .value.accent { color: var(--pitch-bright); }
 
-.toolbar { display: flex; gap: 0.6rem; align-items: center; margin-bottom: 0.9rem; flex-wrap: wrap; }
-.toolbar input[type="search"] { flex: 1; min-width: 12rem; border: 1px solid var(--line); border-radius: 8px; padding: 0.55rem 0.8rem; background: var(--paper-raised); color: var(--ink); }
-.toolbar select { border: 1px solid var(--line); border-radius: 8px; padding: 0.55rem 0.7rem; background: var(--paper-raised); color: var(--ink); width: auto; }
-.phase-bar { display: flex; align-items: center; gap: 0.8rem; margin-bottom: 0.7rem; flex-wrap: wrap; }
+.toolbar { display: flex; gap: 0.6rem; align-items: center; margin-bottom: 0.6rem; flex-wrap: wrap; }
+.toolbar input[type="search"] { flex: 1; min-width: 12rem; border: 1px solid var(--line); border-radius: 8px; padding: 0.5rem 0.8rem; background: var(--paper-raised); color: var(--ink); }
+.toolbar select { border: 1px solid var(--line); border-radius: 8px; padding: 0.5rem 0.7rem; background: var(--paper-raised); color: var(--ink); width: auto; }
+.phase-bar { display: flex; align-items: center; gap: 0.8rem; margin-bottom: 0.6rem; flex-wrap: wrap; }
 .phase-steps { display: flex; gap: 0.35rem; flex-wrap: wrap; }
 .phase-step { display: flex; align-items: center; gap: 0.4rem; border: 1px solid var(--line); background: var(--paper-raised); border-radius: 999px; padding: 0.45rem 0.9rem 0.45rem 0.5rem; font-weight: 700; font-size: 0.85rem; cursor: pointer; color: var(--ink-soft); }
 .phase-step .n { display: inline-flex; align-items: center; justify-content: center; width: 1.35rem; height: 1.35rem; border-radius: 50%; background: var(--line); color: var(--ink-faint); font-size: 0.72rem; font-weight: 800; }
@@ -151,9 +151,9 @@ input[type="text"], input[type="number"], select {
 .phase-step.all { font-weight: 600; opacity: 0.8; }
 .phase-step.all.active { opacity: 1; }
 
-.turn-banner { margin-bottom: 1rem; }
+.turn-banner { margin-bottom: 0.8rem; }
 .turn-banner .hint { font-size: 0.85rem; color: var(--ink-faint); }
-.tb-turn { display: flex; align-items: baseline; gap: 0.6rem; flex-wrap: wrap; border: 1px solid color-mix(in srgb, var(--pitch-deep) 25%, var(--line)); background: linear-gradient(160deg, var(--pitch-tint), var(--paper-raised) 65%); border-radius: 12px; padding: 0.75rem 1rem; }
+.tb-turn { display: flex; align-items: baseline; gap: 0.6rem; flex-wrap: wrap; border: 1px solid color-mix(in srgb, var(--pitch-deep) 25%, var(--line)); background: linear-gradient(160deg, var(--pitch-tint), var(--paper-raised) 65%); border-radius: 12px; padding: 0.55rem 1rem; }
 .tb-label { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--pitch-deep); font-weight: 800; }
 @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .tb-label { color: var(--pitch-bright); } }
 :root[data-theme="dark"] .tb-label { color: var(--pitch-bright); }
@@ -168,9 +168,12 @@ input[type="text"], input[type="number"], select {
 
 .results-count { margin-left: auto; font-size: 0.8rem; color: var(--ink-faint); }
 
-.listone { border: 1px solid var(--line); border-radius: 14px; background: var(--paper-raised); overflow: hidden; }
+/* la tabella scorre al suo interno (con intestazione fissa) invece di allungare
+   tutta la pagina: con 500+ giocatori altrimenti bisognerebbe scorrere all'infinito
+   perdendo di vista fasi, turno e statistiche in alto */
+.listone { border: 1px solid var(--line); border-radius: 14px; background: var(--paper-raised); max-height: calc(100vh - 17rem); overflow-y: auto; }
 .listone-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
-.listone-table thead th { text-align: left; font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--ink-faint); padding: 0.6rem 0.8rem; background: var(--paper-sunk); border-bottom: 1px solid var(--line); }
+.listone-table thead th { position: sticky; top: 0; z-index: 1; text-align: left; font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--ink-faint); padding: 0.6rem 0.8rem; background: var(--paper-sunk); border-bottom: 1px solid var(--line); }
 .listone-table td { padding: 0.6rem 0.8rem; border-bottom: 1px solid var(--line); vertical-align: middle; }
 .listone-table tbody tr:last-child td { border-bottom: none; }
 .listone-table tbody tr[data-status="assegnato"] { opacity: 0.62; }
@@ -240,7 +243,7 @@ input[type="text"], input[type="number"], select {
 .panel-card-head { display: flex; align-items: baseline; justify-content: space-between; gap: 0.5rem; margin-bottom: 0.8rem; flex-wrap: wrap; }
 .panel-card-head h3 { font-size: 0.95rem; }
 .panel-card .hint { font-size: 0.76rem; color: var(--ink-faint); }
-.panel-card #teams-panel { display: grid; gap: 0.75rem; }
+.panel-card #teams-panel { display: grid; gap: 0.75rem; max-height: 34rem; overflow-y: auto; padding-right: 0.2rem; }
 
 .roster-toggle {
   display: flex; align-items: center; gap: 0.35rem; margin-top: 0.7rem;
@@ -257,17 +260,3 @@ input[type="text"], input[type="number"], select {
 .team-roster-list .list-row .t { margin-left: auto; font-size: 0.74rem; color: var(--ink-faint); font-variant-numeric: tabular-nums; }
 .team-roster-list .hint { font-size: 0.78rem; color: var(--ink-faint); }
 
-/* ============ strategia in linguaggio naturale (parser a regole) ============ */
-.strategy-card textarea {
-  width: 100%; border: 1px solid var(--line); border-radius: 10px; padding: 0.65rem 0.75rem;
-  background: var(--paper); color: var(--ink); font: inherit; resize: vertical; min-height: 4.5rem;
-}
-.strategy-result { margin-top: 0.9rem; display: grid; gap: 0.5rem; }
-.strategy-result .sr-group-label { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--ink-faint); margin-top: 0.4rem; }
-.strategy-result .sr-group-label:first-child { margin-top: 0; }
-.constraint-chip {
-  display: flex; align-items: flex-start; gap: 0.5rem; border: 1px solid var(--line); border-radius: 10px;
-  padding: 0.5rem 0.65rem; font-size: 0.82rem; background: var(--paper); line-height: 1.35;
-}
-.constraint-chip .ico { flex: none; font-size: 0.95rem; }
-.constraint-chip.unparsed { border-color: color-mix(in srgb, var(--risk) 30%, var(--line)); background: var(--risk-tint); color: var(--risk); }

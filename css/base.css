@@ -67,7 +67,7 @@ input:focus-visible, select:focus-visible, button:focus-visible, a:focus-visible
   outline-offset: 2px;
 }
 
-.wrap { max-width: 74rem; margin: 0 auto; padding: 0 1.5rem; }
+.wrap { max-width: 90rem; margin: 0 auto; padding: 0 1.5rem; }
 
 /* ---------------- intestazione comune ---------------- */
 header.top {

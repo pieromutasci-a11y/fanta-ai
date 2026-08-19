@@ -95,11 +95,13 @@ input[type="text"], input[type="number"], select {
 .chip.active { background: var(--pitch-deep); color: var(--pitch-tint); border-color: var(--pitch-deep); }
 .chip:hover:not(.active) { border-color: var(--pitch-deep); color: var(--ink); }
 
+.subhead { font-size: 0.95rem; font-weight: 800; margin: 0 0 0.2rem; }
+.budget-total { margin-top: 0.6rem; font-size: 0.82rem; color: var(--ink-faint); }
+.budget-total.off { color: var(--risk); font-weight: 700; }
 .weights-panel { display: flex; flex-direction: column; gap: 0.7rem; margin-top: 1rem; }
 .weight-row { display: grid; grid-template-columns: 11rem 1fr 2.6rem; align-items: center; gap: 0.8rem; }
 @media (max-width: 40rem) { .weight-row { grid-template-columns: 1fr; gap: 0.3rem; } }
 .weight-label { font-size: 0.85rem; font-weight: 600; }
-.malus-tag { font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.04em; font-weight: 800; color: var(--risk); border: 1px solid var(--risk); border-radius: 999px; padding: 0.1rem 0.4rem; margin-left: 0.3rem; }
 .weight-slider { width: 100%; accent-color: var(--pitch-deep); }
 .weight-value { font-variant-numeric: tabular-nums; font-weight: 700; text-align: right; color: var(--ink-soft); }
 

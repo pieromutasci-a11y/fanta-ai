@@ -33,8 +33,11 @@
  *  4) PREZZO = il budget di mercato ancora disponibile in tutta la lega (crediti
  *     rimasti a tutte le squadre, meno una riserva di 1 credito per ogni slot di
  *     rosa ancora da riempire — altrimenti nessuno potrebbe completare la squadra)
- *     viene distribuito in proporzione al VOR: chi ha il doppio del VOR si merita
- *     il doppio del budget "di lusso" disponibile, oltre al credito minimo di base.
+ *     viene prima SPEZZATO in 4 fette secondo le percentuali per ruolo scelte
+ *     dall'utente (es. 40% agli attaccanti), poi ogni fetta viene distribuita ai
+ *     giocatori di quel ruolo in proporzione al VOR: chi ha il doppio del VOR si
+ *     merita il doppio del budget "di lusso" della fetta del suo ruolo, oltre al
+ *     credito minimo di base.
  *
  * Si ricalcola da zero ogni volta che qualcosa cambia (un giocatore viene comprato,
  * il budget o la composizione rosa cambiano, entra/esce un avversario) — per questo
@@ -46,7 +49,10 @@
  * A differenza dei modelli di previsione (Gradient Boosting / Bayesiano gerarchico,
  * che hanno centinaia di pesi imparati dai dati), questo e' un algoritmo di
  * allocazione economica: non "impara" pesi, applica una formula matematica diretta.
- * L'unico parametro davvero regolabile e':
+ * Due cose sono regolabili dall'esterno:
+ *  - `percentualiBudget` (parametro di input, sezione "Pesi per ruolo" del sito):
+ *    quanto del budget di lega va a ciascun reparto.
+ *  - la costante qui sotto.
  */
 const RISERVA_CREDITI_PER_SLOT_LIBERO = 1;
 /*
@@ -77,17 +83,21 @@ const RISERVA_CREDITI_PER_SLOT_LIBERO = 1;
  *        Quanto ha speso finora ogni squadra (nomi coerenti con quelli usati altrove).
  * @param {{[squadra: string]: number}} input.slotOccupatiPerSquadra
  *        Quanti giocatori ha gia' preso ogni squadra (qualsiasi ruolo).
+ * @param {{P: number, D: number, C: number, A: number}} [input.percentualiBudget]
+ *        Quanto del budget di mercato destinare a ciascun ruolo (non serve che
+ *        sommino a 100: vengono normalizzate qui dentro). Se omesso, 25% a testa.
  *
  * @returns {{
  *   prezzi: Map<string, number>,               // id giocatore -> prezzo consigliato
  *   diagnostica: {
  *     livelloRimpiazzo: {P:number,D:number,C:number,A:number},
  *     budgetDistribuibile: number,
+ *     budgetPerRuolo: {P:number,D:number,C:number,A:number},
  *     prezzoMassimoPagabile: number,
  *   }
  * }}
  */
-function calcolaPrezziConsigliati({ liberi, teamBudget, numSquadre, composizioneRosa, creditiSpesiPerSquadra, slotOccupatiPerSquadra }) {
+function calcolaPrezziConsigliati({ liberi, teamBudget, numSquadre, composizioneRosa, creditiSpesiPerSquadra, slotOccupatiPerSquadra, percentualiBudget }) {
   numSquadre = Math.max(numSquadre, 1);
   const slotTotaliPerSquadra = composizioneRosa.P + composizioneRosa.D + composizioneRosa.C + composizioneRosa.A;
 
@@ -114,6 +124,15 @@ function calcolaPrezziConsigliati({ liberi, teamBudget, numSquadre, composizione
   // giocatore: tutto il proprio budget, meno la riserva minima per ogni altro slot
   const prezzoMassimoPagabile = Math.max(1, teamBudget - (slotTotaliPerSquadra - 1) * RISERVA_CREDITI_PER_SLOT_LIBERO);
 
+  // --- fetta di budget per ruolo: normalizza le percentuali (non serve che sommino a 100) ---
+  const pct = Object.assign({ P: 25, D: 25, C: 25, A: 25 }, percentualiBudget || {});
+  const sommaPct = ['P', 'D', 'C', 'A'].reduce((s, r) => s + Math.max(0, pct[r] || 0), 0);
+  const budgetPerRuolo = {};
+  ['P', 'D', 'C', 'A'].forEach(ruolo => {
+    const quota = sommaPct > 0 ? Math.max(0, pct[ruolo] || 0) / sommaPct : 0.25;
+    budgetPerRuolo[ruolo] = budgetDistribuibile * quota;
+  });
+
   // --- passo 2: livello di rimpiazzo per ruolo ---
   const livelloRimpiazzo = {};
   ['P', 'D', 'C', 'A'].forEach(ruolo => {
@@ -127,23 +146,24 @@ function calcolaPrezziConsigliati({ liberi, teamBudget, numSquadre, composizione
       : 0;
   });
 
-  // --- passo 3: VOR di ogni giocatore ---
-  let sumVOR = 0;
+  // --- passo 3: VOR di ogni giocatore, sommato PER RUOLO (ogni ruolo si spartisce solo la propria fetta) ---
+  const sumVORPerRuolo = { P: 0, D: 0, C: 0, A: 0 };
   const vor = new Map();
   liberi.forEach(g => {
     if (g.valoreAtteso === null || g.valoreAtteso === undefined) return;
     const v = Math.max(0, g.valoreAtteso - livelloRimpiazzo[g.ruolo]);
     vor.set(g.id, v);
-    sumVOR += v;
+    sumVORPerRuolo[g.ruolo] = (sumVORPerRuolo[g.ruolo] || 0) + v;
   });
 
-  // --- passo 4b: prezzo finale, proporzionale al VOR ---
+  // --- passo 4b: prezzo finale, proporzionale al VOR dentro la fetta di budget del proprio ruolo ---
   const prezzi = new Map();
   liberi.forEach(g => {
     let prezzo;
     const v = vor.get(g.id);
-    if (v !== undefined && sumVOR > 0) {
-      prezzo = RISERVA_CREDITI_PER_SLOT_LIBERO + Math.round(budgetDistribuibile * v / sumVOR);
+    const sumVORRuolo = sumVORPerRuolo[g.ruolo];
+    if (v !== undefined && sumVORRuolo > 0) {
+      prezzo = RISERVA_CREDITI_PER_SLOT_LIBERO + Math.round(budgetPerRuolo[g.ruolo] * v / sumVORRuolo);
     } else {
       // nessun abbinamento a una previsione AI: riserva minima, base solo sull'FVM ufficiale
       prezzo = Math.max(RISERVA_CREDITI_PER_SLOT_LIBERO, Math.round(g.fvm || RISERVA_CREDITI_PER_SLOT_LIBERO));
@@ -151,7 +171,7 @@ function calcolaPrezziConsigliati({ liberi, teamBudget, numSquadre, composizione
     prezzi.set(g.id, Math.min(prezzo, prezzoMassimoPagabile));
   });
 
-  return { prezzi, diagnostica: { livelloRimpiazzo, budgetDistribuibile, prezzoMassimoPagabile } };
+  return { prezzi, diagnostica: { livelloRimpiazzo, budgetDistribuibile, budgetPerRuolo, prezzoMassimoPagabile } };
 }
 
 // esposto come global (nessun sistema di moduli sul sito, per coerenza col resto del codice)

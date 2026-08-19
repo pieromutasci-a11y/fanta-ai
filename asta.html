@@ -82,6 +82,13 @@
       <div class="card full">
         <h2><span class="card-icon">⚖️</span> Pesi per ruolo</h2>
         <p class="card-sub">Decidi tu quanto contano le statistiche nel prezzo consigliato — puoi dare più peso alla fantamedia, alle presenze, poco ai gol, e cambiare il bilanciamento in modo diverso per ogni ruolo.</p>
+
+        <h3 class="subhead">Percentuale di budget per ruolo</h3>
+        <p class="card-sub">Quanto del budget totale di lega destinare a ciascun reparto — i prezzi consigliati di ogni ruolo restano dentro questa fetta.</p>
+        <div class="weights-panel" id="budget-weights-panel"><!-- generato da script --></div>
+        <div class="budget-total" id="budget-total"><!-- generato da script --></div>
+
+        <h3 class="subhead" style="margin-top:1.4rem;">Statistiche per ruolo</h3>
         <div class="chip-group" id="weights-role-picker">
           <button class="chip active" type="button" data-role="P">Portieri</button>
           <button class="chip" type="button" data-role="D">Difensori</button>
@@ -243,7 +250,7 @@
       }));
       localStorage.setItem(ASTA_STORAGE_KEY, JSON.stringify({
         credits: document.getElementById('credits').value,
-        opponents, players, counts, pesi: PESI,
+        opponents, players, counts, pesi: PESI, pesiBudget: PESI_BUDGET,
         activeRole, astaMode, callTurnIndex,
         strategyText: document.getElementById('strategy-input').value,
       }));
@@ -358,12 +365,45 @@
     });
   }
 
+  // percentuale del budget di lega destinata a ciascun ruolo (non devono per forza
+  // sommare esattamente a 100: si normalizzano da sole al momento del calcolo prezzi,
+  // cosi' come per gli altri slider non c'e' bisogno di inseguire un totale preciso)
+  const PESI_BUDGET_DEFAULT = { P: 5, D: 25, C: 30, A: 40 };
+  const PESI_BUDGET = Object.assign({}, PESI_BUDGET_DEFAULT, (astaSaved && astaSaved.pesiBudget) || {});
+  const ROLE_LABEL_BUDGET = { P: 'Portieri', D: 'Difensori', C: 'Centrocampisti', A: 'Attaccanti' };
+  function renderBudgetWeightsPanel() {
+    const panel = document.getElementById('budget-weights-panel');
+    panel.innerHTML = ['P', 'D', 'C', 'A'].map(ruolo => `
+      <div class="weight-row">
+        <div class="weight-label">${ROLE_LABEL_BUDGET[ruolo]}</div>
+        <input type="range" min="0" max="100" value="${PESI_BUDGET[ruolo]}" data-role-budget="${ruolo}" class="weight-slider">
+        <span class="weight-value">${PESI_BUDGET[ruolo]}%</span>
+      </div>`).join('');
+    const totale = Object.values(PESI_BUDGET).reduce((a, b) => a + b, 0);
+    const box = document.getElementById('budget-total');
+    box.textContent = `Totale: ${totale}%` + (totale !== 100 ? ' — non serve arrivare esattamente a 100, FantaAI proporziona da solo' : '');
+    box.classList.toggle('off', totale !== 100);
+  }
+  document.getElementById('budget-weights-panel').addEventListener('input', (e) => {
+    const slider = e.target.closest('[data-role-budget]'); if (!slider) return;
+    PESI_BUDGET[slider.dataset.roleBudget] = parseInt(slider.value, 10);
+    slider.nextElementSibling.textContent = slider.value + '%';
+    const totale = Object.values(PESI_BUDGET).reduce((a, b) => a + b, 0);
+    const box = document.getElementById('budget-total');
+    box.textContent = `Totale: ${totale}%` + (totale !== 100 ? ' — non serve arrivare esattamente a 100, FantaAI proporziona da solo' : '');
+    box.classList.toggle('off', totale !== 100);
+    calcolaPrezziConsigliati();
+    renderTurnBanner();
+    persistAsta();
+  });
+  renderBudgetWeightsPanel();
+
   let weightsRole = 'P';
   function renderWeightsPanel() {
     const panel = document.getElementById('weights-panel');
     panel.innerHTML = WEIGHT_STATS[weightsRole].map(s => `
       <div class="weight-row">
-        <div class="weight-label">${s.label}${s.malus ? ' <span class="malus-tag">malus</span>' : ''}</div>
+        <div class="weight-label">${s.label}</div>
         <input type="range" min="0" max="100" value="${PESI[weightsRole][s.key]}" data-stat="${s.key}" class="weight-slider">
         <span class="weight-value">${PESI[weightsRole][s.key]}</span>
       </div>`).join('');
@@ -648,7 +688,7 @@
 
     const { prezzi } = window.FantaAIOptimizer.calcolaPrezziConsigliati({
       liberi, teamBudget, numSquadre: TEAM_NAMES.length, composizioneRosa,
-      creditiSpesiPerSquadra, slotOccupatiPerSquadra,
+      creditiSpesiPerSquadra, slotOccupatiPerSquadra, percentualiBudget: PESI_BUDGET,
     });
 
     liberiRows.forEach((r, i) => {
